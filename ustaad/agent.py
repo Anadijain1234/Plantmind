@@ -239,8 +239,9 @@ def _llm_answer(industry, asset, problem, cards, language):
                   "STEP 2: answer from those only. Rank causes by what was proven to WORK; put attempts that DID NOT WORK in "
                   "'avoid'. The same model at another site counts (say so). 'Public record' items are outside evidence. "
                   "'Pattern Hindsight learned' items are patterns summarised from many memories. 'Maker's manual' items are the "
-                  "official instructions: if the team's proven fix differs from the manual, or the team found something the "
-                  "manual misses, say it in manual_vs_team like 'Manual says …; Ramesh found … (date)'. "
+                  "official instructions: ONLY when a memory marked Maker's manual is among the ones you use, and the team's proven "
+                  "fix differs from it, say it in manual_vs_team like 'Manual says …; Ramesh found … (date)'; otherwise leave "
+                  "manual_vs_team empty and never mention a manual. "
                   "If NO memory is relevant: used_memories is [], say plainly in the summary that the team has no record of "
                   "this problem yet, and give careful general advice with low confidence. Never invent names, dates or past "
                   f"cases. Cite memories as M1, M2 in memory_refs. Short and practical. {guard} {SCOPE_RULE} "
@@ -353,6 +354,8 @@ def ask(industry, asset_id, problem, use_memory=True, language="en"):
     # used memories first (proven fixes on top, failed attempts last); the rest go under "also searched"
     cards.sort(key=lambda c: (not c["used"], rank.get(c["trust"]["tier"], 3)))
     used = [c for c in cards if c["used"]]
+    if not any(c["kind"] == "manual" for c in used):
+        answer["manual_vs_team"] = ""  # only compare with the manual when a real manual memory was used
     if off_topic:
         answer.update({"likely_causes": [], "steps": [], "avoid": [], "expert_tip": "", "parts_to_keep_ready": [],
                        "check_first": "", "estimated_time": "", "manual_vs_team": ""})
