@@ -1,0 +1,120 @@
+{
+ "version": 1,
+ "saved_at": "2026-11-07T17:55:57",
+ "records": [
+  {
+   "id": "rec-7ebb9d18",
+   "industry": "restaurant",
+   "datetime": "2026-11-07T17:55",
+   "asset_id": "TND-1",
+   "person_id": "meena",
+   "problem": "I heated the sabji for bit longer",
+   "code": "",
+   "symptom": "I heated the sabji for bit longer",
+   "cause": "",
+   "action": "I heated the sabji for bit longer",
+   "parts": "",
+   "cost": 0.0,
+   "downtime_minutes": 0.0,
+   "outcome": "open",
+   "notes": "Said: I heated the sabji for bit longer",
+   "status": "pending",
+   "approved_by": null,
+   "source": "app",
+   "source_ref": null,
+   "credited_to": null,
+   "steps_done": null
+  }
+ ],
+ "tips": [],
+ "machines": [
+  {
+   "industry": "factory",
+   "id": "CNC-3",
+   "data": "{\"id\": \"CNC-3\", \"install_date\": \"2019-06-10\", \"warranty_until\": \"2024-06-10\", \"vendor\": \"HMC service partner (demo)\", \"components\": [{\"name\": \"Coupling spider\", \"part_no\": \"CS-28\", \"every_days\": 105, \"stock\": 0, \"min_stock\": 1}, {\"name\": \"Spindle bearing 7014\", \"part_no\": \"7014-C\", \"every_days\": 365, \"stock\": 1, \"min_stock\": 1}, {\"name\": \"Rotary joint o-ring\", \"part_no\": \"OR-45x3\", \"every_days\": 180, \"stock\": 4, \"min_stock\": 2}, {\"name\": \"Pallet pressure switch\", \"part_no\": \"PS-60\", \"stock\": 1, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "factory",
+   "id": "CNC-1",
+   "data": "{\"id\": \"CNC-1\", \"install_date\": \"2021-02-01\", \"warranty_until\": \"2026-12-15\", \"vendor\": \"VMC service partner (demo)\", \"components\": [{\"name\": \"Way-lube oil\", \"part_no\": \"ISO VG 68, 5 L can\", \"every_days\": 30, \"stock\": 2, \"min_stock\": 2}, {\"name\": \"Coolant pump motor\", \"part_no\": \"0.37 kW\", \"stock\": 0, \"min_stock\": 1}, {\"name\": \"Encoder cable clamp\", \"part_no\": \"CC-12\", \"stock\": 5, \"min_stock\": 2}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "factory",
+   "id": "HYD-1",
+   "data": "{\"id\": \"HYD-1\", \"install_date\": \"2018-09-20\", \"vendor\": \"Hydraulics service partner (demo)\", \"components\": [{\"name\": \"Cylinder seal kit\", \"part_no\": \"SK-200T\", \"stock\": 1, \"min_stock\": 1}, {\"name\": \"Rod wiper seal\", \"part_no\": \"RW-90\", \"stock\": 3, \"min_stock\": 1}, {\"name\": \"Hydraulic oil 200 L\", \"part_no\": \"HLP 46\", \"every_days\": 365, \"stock\": 1, \"min_stock\": 1}, {\"name\": \"Hydraulic hose 1 inch\", \"part_no\": \"HH-1\", \"stock\": 2, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "factory",
+   "id": "CMP-1",
+   "data": "{\"id\": \"CMP-1\", \"install_date\": \"2020-03-05\", \"warranty_until\": \"2023-03-05\", \"vendor\": \"Compressor service partner (demo)\", \"components\": [{\"name\": \"Separator element\", \"part_no\": \"SE-50\", \"every_days\": 180, \"stock\": 0, \"min_stock\": 1}, {\"name\": \"Intake air filter\", \"part_no\": \"AF-50\", \"every_days\": 90, \"stock\": 2, \"min_stock\": 1}, {\"name\": \"Solenoid coil 24V\", \"part_no\": \"SC-24\", \"stock\": 1, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "factory",
+   "id": "BLR-2",
+   "data": "{\"id\": \"BLR-2\", \"install_date\": \"2017-11-15\", \"vendor\": \"Boiler service partner (demo)\", \"components\": [{\"name\": \"Softener salt 50 kg\", \"part_no\": \"Bag\", \"every_days\": 30, \"stock\": 3, \"min_stock\": 2}, {\"name\": \"Level switch\", \"part_no\": \"LS-2\", \"stock\": 0, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "restaurant",
+   "id": "FRY-1",
+   "data": "{\"id\": \"FRY-1\", \"install_date\": \"2023-01-10\", \"warranty_until\": \"2024-01-10\", \"vendor\": \"Kitchen equipment service (demo)\", \"components\": [{\"name\": \"Fryer thermostat\", \"part_no\": \"TH-20\", \"stock\": 0, \"min_stock\": 1}, {\"name\": \"Oil filter paper\", \"part_no\": \"Pack of 100\", \"every_days\": 30, \"stock\": 2, \"min_stock\": 1}, {\"name\": \"Pilot assembly\", \"part_no\": \"PA-20\", \"stock\": 1, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "restaurant",
+   "id": "COLD-1",
+   "data": "{\"id\": \"COLD-1\", \"install_date\": \"2022-05-01\", \"warranty_until\": \"2027-05-01\", \"vendor\": \"Cold-room service (demo)\", \"components\": [{\"name\": \"Door gasket\", \"part_no\": \"DG-COLD\", \"every_days\": 365, \"stock\": 1, \"min_stock\": 1}, {\"name\": \"Condenser fan motor\", \"part_no\": \"FM-120\", \"stock\": 0, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "healthcare",
+   "id": "VNT-1",
+   "data": "{\"id\": \"VNT-1\", \"install_date\": \"2022-08-01\", \"warranty_until\": \"2027-08-01\", \"vendor\": \"Ventilator service partner (demo)\", \"components\": [{\"name\": \"Flow sensor\", \"part_no\": \"FS-A\", \"every_days\": 365, \"stock\": 2, \"min_stock\": 1}, {\"name\": \"Inlet air filter\", \"part_no\": \"IF-A\", \"every_days\": 30, \"stock\": 6, \"min_stock\": 4}, {\"name\": \"Internal battery\", \"part_no\": \"BAT-A\", \"every_days\": 730, \"stock\": 0, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "healthcare",
+   "id": "VNT-2",
+   "data": "{\"id\": \"VNT-2\", \"install_date\": \"2022-08-01\", \"warranty_until\": \"2027-08-01\", \"vendor\": \"Ventilator service partner (demo)\", \"components\": [{\"name\": \"Internal battery\", \"part_no\": \"BAT-A\", \"every_days\": 730, \"stock\": 0, \"min_stock\": 1}, {\"name\": \"Inlet air filter\", \"part_no\": \"IF-A\", \"every_days\": 30, \"stock\": 6, \"min_stock\": 4}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "healthcare",
+   "id": "AUT-1",
+   "data": "{\"id\": \"AUT-1\", \"install_date\": \"2021-04-12\", \"vendor\": \"Sterilisation service partner (demo)\", \"components\": [{\"name\": \"Door gasket\", \"part_no\": \"DG-AUT\", \"every_days\": 180, \"stock\": 1, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "garage",
+   "id": "PH-W",
+   "data": "{\"id\": \"PH-W\", \"components\": [{\"name\": \"O2 sensor\", \"part_no\": \"O2-12\", \"stock\": 1, \"min_stock\": 1}, {\"name\": \"Intake hose\", \"part_no\": \"IH-12\", \"stock\": 2, \"min_stock\": 2}, {\"name\": \"Fan relay\", \"part_no\": \"FR-12\", \"stock\": 3, \"min_stock\": 1}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  },
+  {
+   "industry": "garage",
+   "id": "DS-W",
+   "data": "{\"id\": \"DS-W\", \"components\": [{\"name\": \"Glow plug\", \"part_no\": \"GP-22\", \"stock\": 4, \"min_stock\": 4}], \"demo\": true}",
+   "created": "2026-11-07T17:03",
+   "created_by": "demo"
+  }
+ ],
+ "manual_items": [],
+ "flags": [],
+ "meta": [],
+ "custom_packs": {}
+}
