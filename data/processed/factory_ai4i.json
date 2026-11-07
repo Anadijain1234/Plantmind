@@ -1,0 +1,49 @@
+{
+ "source": "AI4I 2020 Predictive Maintenance Dataset (UCI, CC BY 4.0): 10,000 machining runs, 339 failures.",
+ "runs": 10000,
+ "failures": 339,
+ "modes": [
+  {
+   "id": "TWF",
+   "name": "Tool wear failure",
+   "count": 46,
+   "rule": "Tool wear reaches about 200-240 minutes",
+   "check": "tool_wear >= 200"
+  },
+  {
+   "id": "HDF",
+   "name": "Heat dissipation failure",
+   "count": 115,
+   "rule": "Process minus air temperature below 8.6 K AND spindle speed below 1380 rpm",
+   "check": "dT < 8.6 and rpm < 1380"
+  },
+  {
+   "id": "PWF",
+   "name": "Power failure",
+   "count": 95,
+   "rule": "Power (torque × speed) below 3,500 W or above 9,000 W",
+   "check": "power < 3500 or power > 9000"
+  },
+  {
+   "id": "OSF",
+   "name": "Overstrain failure",
+   "count": 98,
+   "rule": "Tool wear × torque above 11,000 (L), 12,000 (M) or 13,000 (H) min·Nm",
+   "check": "strain > limit[type]"
+  },
+  {
+   "id": "RNF",
+   "name": "Random failure",
+   "count": 19,
+   "rule": "About 0.1% chance on any run — no warning sign",
+   "check": "none"
+  }
+ ],
+ "typical": {
+  "air_K": 300.0,
+  "process_K": 310.0,
+  "rpm": 1503,
+  "torque": 40.1,
+  "tool_wear": 108
+ }
+}

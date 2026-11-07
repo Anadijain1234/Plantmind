@@ -1,0 +1,96 @@
+{
+ "source": "NYC Department of Health restaurant inspection results (NYC Open Data), cuisine = Indian.",
+ "rows": 4410,
+ "restaurants": 318,
+ "date_range": [
+  "2022-05-16",
+  "2026-11-04"
+ ],
+ "critical_share": 0.576,
+ "top_violations": [
+  {
+   "text": "Non-food contact surface or equipment made of unacceptable material, not kept clean, or not properly sealed, raised, spaced or movable to allow accessibility for cleaning on all sides, above and underneath the unit.",
+   "critical": false,
+   "count": 488
+  },
+  {
+   "text": "Establishment is not free of harborage or conditions conducive to rodents, insects or other pests.",
+   "critical": false,
+   "count": 450
+  },
+  {
+   "text": "Food, supplies, or equipment not protected from potential source of contamination during storage, preparation, transportation, display, service or from customer’s refillable, reusable container. Condiments not in single-service containers or dispensed directly by the vendor.",
+   "critical": true,
+   "count": 302
+  },
+  {
+   "text": "Cold TCS food item held above 41 °F; smoked or processed fish held above 38 °F; intact raw eggs held above 45 °F; or reduced oxygen packaged (ROP) TCS foods held above required temperatures except during active necessary preparation.",
+   "critical": true,
+   "count": 289
+  },
+  {
+   "text": "Evidence of mice or live mice in establishment's food or non-food areas.",
+   "critical": true,
+   "count": 251
+  },
+  {
+   "text": "Anti-siphonage or back-flow prevention device not provided where required; equipment or floor not properly drained; sewage disposal system in disrepair or not functioning properly. Condensation or liquid waste improperly disposed of.",
+   "critical": false,
+   "count": 246
+  },
+  {
+   "text": "Hot TCS food item not held at or above 140 °F.",
+   "critical": true,
+   "count": 242
+  },
+  {
+   "text": "Food contact surface not properly washed, rinsed and sanitized after each use and following any activity when contamination may have occurred.",
+   "critical": true,
+   "count": 178
+  },
+  {
+   "text": "Live roaches in facility's food or non-food area.",
+   "critical": true,
+   "count": 168
+  },
+  {
+   "text": "Filth flies or food/refuse/sewage associated with (FRSA) flies or other nuisance pests in establishment’s food and/or non-food areas. FRSA flies include house flies, blow flies, bottle flies, flesh flies, drain flies, Phorid flies and fruit flies.",
+   "critical": true,
+   "count": 156
+  },
+  {
+   "text": "Food Protection Certificate (FPC) not held by manager or supervisor of food operations.",
+   "critical": true,
+   "count": 149
+  },
+  {
+   "text": "Dishwashing and ware washing: Cleaning and sanitizing of tableware, including dishes, utensils, and equipment deficient.",
+   "critical": false,
+   "count": 118
+  },
+  {
+   "text": "Personal cleanliness is inadequate. Outer garment soiled with possible contaminant. Effective hair restraint not worn where required. Jewelry worn on hands or arms. Fingernail polish worn or fingernails not kept clean and trimmed.",
+   "critical": true,
+   "count": 95
+  },
+  {
+   "text": "Sanitized equipment or utensil, including in-use food dispensing utensil, improperly used or stored.",
+   "critical": true,
+   "count": 94
+  },
+  {
+   "text": "No hand washing facility in or adjacent to toilet room or within 25 feet of a food preparation, food service or ware washing area. Hand washing facility not accessible, obstructed or used for non-hand washing purposes. No hot and cold running water or water at inadequate pressure. No soap or acceptable hand-drying device.",
+   "critical": true,
+   "count": 93
+  }
+ ],
+ "hot_hold_violations": 242,
+ "cold_hold_violations": 289,
+ "restaurants_by_year": {
+  "2022": 17,
+  "2023": 101,
+  "2024": 184,
+  "2025": 196,
+  "2026": 218
+ }
+}

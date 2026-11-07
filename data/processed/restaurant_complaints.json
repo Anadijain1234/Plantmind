@@ -1,0 +1,427 @@
+{
+ "restaurants_rows": 51717,
+ "reviews_scanned": 1320051,
+ "dishes": [
+  {
+   "dish": "Pizza",
+   "mentions": 106332,
+   "low_rated": 10031,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 947
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 571
+    },
+    {
+     "issue": "cold / not hot",
+     "count": 489
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 320
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 289
+    }
+   ]
+  },
+  {
+   "dish": "Biryani",
+   "mentions": 78780,
+   "low_rated": 19464,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 1626
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 915
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 737
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 689
+    },
+    {
+     "issue": "cold / not hot",
+     "count": 656
+    }
+   ]
+  },
+  {
+   "dish": "Paneer dishes",
+   "mentions": 62653,
+   "low_rated": 10426,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 1218
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 906
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 746
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 460
+    },
+    {
+     "issue": "oily",
+     "count": 403
+    }
+   ]
+  },
+  {
+   "dish": "Burger",
+   "mentions": 53275,
+   "low_rated": 4622,
+   "issues": [
+    {
+     "issue": "stale / not fresh",
+     "count": 442
+    },
+    {
+     "issue": "bland",
+     "count": 417
+    },
+    {
+     "issue": "cold / not hot",
+     "count": 219
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 204
+    },
+    {
+     "issue": "oily",
+     "count": 194
+    }
+   ]
+  },
+  {
+   "dish": "Pasta",
+   "mentions": 52827,
+   "low_rated": 3810,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 576
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 329
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 281
+    },
+    {
+     "issue": "cold / not hot",
+     "count": 148
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 70
+    }
+   ]
+  },
+  {
+   "dish": "Naan / roti",
+   "mentions": 41117,
+   "low_rated": 8788,
+   "issues": [
+    {
+     "issue": "hard / chewy",
+     "count": 842
+    },
+    {
+     "issue": "bland",
+     "count": 779
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 611
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 513
+    },
+    {
+     "issue": "oily",
+     "count": 407
+    }
+   ]
+  },
+  {
+   "dish": "Coffee",
+   "mentions": 38361,
+   "low_rated": 3036,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 90
+    },
+    {
+     "issue": "oily",
+     "count": 89
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 85
+    },
+    {
+     "issue": "cold / not hot",
+     "count": 83
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 64
+    }
+   ]
+  },
+  {
+   "dish": "Tikka",
+   "mentions": 28820,
+   "low_rated": 2993,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 319
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 172
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 164
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 139
+    },
+    {
+     "issue": "oily",
+     "count": 113
+    }
+   ]
+  },
+  {
+   "dish": "Noodles",
+   "mentions": 27328,
+   "low_rated": 3715,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 465
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 217
+    },
+    {
+     "issue": "oily",
+     "count": 212
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 90
+    },
+    {
+     "issue": "too spicy",
+     "count": 80
+    }
+   ]
+  },
+  {
+   "dish": "Dal",
+   "mentions": 24882,
+   "low_rated": 4554,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 530
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 228
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 211
+    },
+    {
+     "issue": "cold / not hot",
+     "count": 174
+    },
+    {
+     "issue": "oily",
+     "count": 165
+    }
+   ]
+  },
+  {
+   "dish": "Kebab",
+   "mentions": 20701,
+   "low_rated": 2734,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 237
+    },
+    {
+     "issue": "cold / not hot",
+     "count": 152
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 107
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 92
+    },
+    {
+     "issue": "oily",
+     "count": 75
+    }
+   ]
+  },
+  {
+   "dish": "Thali",
+   "mentions": 19822,
+   "low_rated": 2917,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 360
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 192
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 149
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 54
+    },
+    {
+     "issue": "oily",
+     "count": 53
+    }
+   ]
+  },
+  {
+   "dish": "Sandwich",
+   "mentions": 19731,
+   "low_rated": 2672,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 284
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 277
+    },
+    {
+     "issue": "oily",
+     "count": 116
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 109
+    },
+    {
+     "issue": "late delivery",
+     "count": 72
+    }
+   ]
+  },
+  {
+   "dish": "Fried rice",
+   "mentions": 19131,
+   "low_rated": 4246,
+   "issues": [
+    {
+     "issue": "bland",
+     "count": 350
+    },
+    {
+     "issue": "hard / chewy",
+     "count": 239
+    },
+    {
+     "issue": "undercooked / raw",
+     "count": 178
+    },
+    {
+     "issue": "stale / not fresh",
+     "count": 158
+    },
+    {
+     "issue": "oily",
+     "count": 136
+    }
+   ]
+  }
+ ],
+ "issues_total": [
+  {
+   "issue": "bland",
+   "count": 9043
+  },
+  {
+   "issue": "stale / not fresh",
+   "count": 5053
+  },
+  {
+   "issue": "hard / chewy",
+   "count": 4688
+  },
+  {
+   "issue": "undercooked / raw",
+   "count": 4043
+  },
+  {
+   "issue": "cold / not hot",
+   "count": 3182
+  },
+  {
+   "issue": "oily",
+   "count": 2893
+  },
+  {
+   "issue": "too spicy",
+   "count": 1499
+  },
+  {
+   "issue": "late delivery",
+   "count": 743
+  },
+  {
+   "issue": "too salty",
+   "count": 620
+  },
+  {
+   "issue": "small portion",
+   "count": 508
+  }
+ ],
+ "source": "Zomato Bangalore Restaurants dataset (Kaggle, scraped 2019): reviews scanned for dish names; low-rated = 2.5 stars or less. Only these counts are kept, no review text."
+}

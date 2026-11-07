@@ -1,0 +1,1215 @@
+{
+ "source": "Microsoft Azure Predictive Maintenance dataset (public, 100 machines, 2015). Component and error names are anonymised by Microsoft (comp1-4, error1-5).",
+ "model_card": {
+  "type": "Gradient boosted trees (scikit-learn HistGradientBoosting)",
+  "question": "Will this machine have a component failure in the next 24 hours?",
+  "train_period": "Jan-Aug 2015",
+  "test_period": "Sep-Dec 2015",
+  "train_rows": 24200,
+  "test_rows": 12300,
+  "features": [
+   "volt_mean24",
+   "volt_std24",
+   "rotate_mean24",
+   "rotate_std24",
+   "pressure_mean24",
+   "pressure_std24",
+   "vibration_mean24",
+   "vibration_std24",
+   "error1",
+   "error2",
+   "error3",
+   "error4",
+   "error5",
+   "days_since_comp1",
+   "days_since_comp2",
+   "days_since_comp3",
+   "days_since_comp4",
+   "model_n",
+   "age"
+  ],
+  "test_auc": 1.0,
+  "test_average_precision": 0.99,
+  "base_failure_rate": 0.0183,
+  "precision_top5pct": 0.366,
+  "recall_top5pct": 1.0
+ },
+ "demo_day": "2015-12-08",
+ "fleet": [
+  {
+   "machine": "AZ-053",
+   "model": "model3",
+   "age_years": 5,
+   "risk": 1.0,
+   "drivers": [
+    "rotation 369 vs usual 449",
+    "errors in last 24h: error2 x1, error3 x1",
+    "not replaced for 60+ days: comp3, comp4"
+   ],
+   "actually_failed_next_24h": true,
+   "failed_component": "comp2"
+  },
+  {
+   "machine": "AZ-019",
+   "model": "model3",
+   "age_years": 17,
+   "risk": 1.0,
+   "drivers": [
+    "voltage 188 vs usual 170",
+    "errors in last 24h: error1 x1",
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": true,
+   "failed_component": "comp1"
+  },
+  {
+   "machine": "AZ-080",
+   "model": "model3",
+   "age_years": 6,
+   "risk": 1.0,
+   "drivers": [
+    "rotation 342 vs usual 449",
+    "errors in last 24h: error2 x1, error3 x1",
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": true,
+   "failed_component": "comp2"
+  },
+  {
+   "machine": "AZ-070",
+   "model": "model3",
+   "age_years": 9,
+   "risk": 1.0,
+   "drivers": [
+    "rotation 360 vs usual 449",
+    "errors in last 24h: error2 x1, error3 x2",
+    "not replaced for 60+ days: comp2, comp4"
+   ],
+   "actually_failed_next_24h": true,
+   "failed_component": "comp2"
+  },
+  {
+   "machine": "AZ-100",
+   "model": "model4",
+   "age_years": 5,
+   "risk": 1.0,
+   "drivers": [
+    "rotation 346 vs usual 449",
+    "errors in last 24h: error2 x1, error3 x1",
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": true,
+   "failed_component": "comp2"
+  },
+  {
+   "machine": "AZ-082",
+   "model": "model3",
+   "age_years": 11,
+   "risk": 1.0,
+   "drivers": [
+    "rotation 378 vs usual 449",
+    "errors in last 24h: error2 x1, error3 x1",
+    "not replaced for 60+ days: comp2, comp4"
+   ],
+   "actually_failed_next_24h": true,
+   "failed_component": "comp2"
+  },
+  {
+   "machine": "AZ-062",
+   "model": "model4",
+   "age_years": 20,
+   "risk": 1.0,
+   "drivers": [
+    "vibration 49 vs usual 40",
+    "errors in last 24h: error5 x1",
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": true,
+   "failed_component": "comp4"
+  },
+  {
+   "machine": "AZ-093",
+   "model": "model3",
+   "age_years": 18,
+   "risk": 0.0,
+   "drivers": [
+    "errors in last 24h: error1 x1",
+    "not replaced for 60+ days: comp1, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-049",
+   "model": "model1",
+   "age_years": 15,
+   "risk": 0.0,
+   "drivers": [
+    "vibration 50 vs usual 40",
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-096",
+   "model": "model2",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "pressure 122 vs usual 100",
+    "not replaced for 60+ days: comp2, comp3, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-042",
+   "model": "model1",
+   "age_years": 7,
+   "risk": 0.0,
+   "drivers": [
+    "vibration 49 vs usual 40",
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-058",
+   "model": "model1",
+   "age_years": 5,
+   "risk": 0.0,
+   "drivers": [
+    "errors in last 24h: error2 x1",
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-035",
+   "model": "model1",
+   "age_years": 17,
+   "risk": 0.0,
+   "drivers": [
+    "vibration 48 vs usual 40",
+    "not replaced for 60+ days: comp1, comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-091",
+   "model": "model4",
+   "age_years": 17,
+   "risk": 0.0,
+   "drivers": [
+    "errors in last 24h: error2 x1",
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-026",
+   "model": "model3",
+   "age_years": 3,
+   "risk": 0.0,
+   "drivers": [
+    "errors in last 24h: error4 x1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-087",
+   "model": "model2",
+   "age_years": 12,
+   "risk": 0.0,
+   "drivers": [
+    "pressure 127 vs usual 100"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-094",
+   "model": "model2",
+   "age_years": 18,
+   "risk": 0.0,
+   "drivers": [
+    "errors in last 24h: error3 x1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-057",
+   "model": "model4",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "pressure 128 vs usual 100",
+    "not replaced for 60+ days: comp2, comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-021",
+   "model": "model2",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "errors in last 24h: error1 x1",
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-056",
+   "model": "model1",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "rotation 395 vs usual 449"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-037",
+   "model": "model1",
+   "age_years": 16,
+   "risk": 0.0,
+   "drivers": [
+    "pressure 118 vs usual 100",
+    "not replaced for 60+ days: comp1, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-017",
+   "model": "model1",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "vibration 45 vs usual 40",
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-034",
+   "model": "model4",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "errors in last 24h: error1 x1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-061",
+   "model": "model4",
+   "age_years": 2,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-085",
+   "model": "model1",
+   "age_years": 16,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-099",
+   "model": "model1",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-063",
+   "model": "model4",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-016",
+   "model": "model1",
+   "age_years": 3,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-052",
+   "model": "model3",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "rotation 384 vs usual 449",
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-092",
+   "model": "model1",
+   "age_years": 2,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-013",
+   "model": "model1",
+   "age_years": 15,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-031",
+   "model": "model1",
+   "age_years": 11,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-023",
+   "model": "model1",
+   "age_years": 17,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-022",
+   "model": "model1",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-014",
+   "model": "model3",
+   "age_years": 1,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-024",
+   "model": "model1",
+   "age_years": 20,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-072",
+   "model": "model4",
+   "age_years": 2,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-095",
+   "model": "model2",
+   "age_years": 18,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-064",
+   "model": "model3",
+   "age_years": 20,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp3, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-005",
+   "model": "model3",
+   "age_years": 2,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-029",
+   "model": "model4",
+   "age_years": 3,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-088",
+   "model": "model4",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-084",
+   "model": "model3",
+   "age_years": 9,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-030",
+   "model": "model3",
+   "age_years": 20,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-090",
+   "model": "model2",
+   "age_years": 2,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-074",
+   "model": "model4",
+   "age_years": 4,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-027",
+   "model": "model3",
+   "age_years": 9,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-047",
+   "model": "model2",
+   "age_years": 6,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-015",
+   "model": "model3",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-098",
+   "model": "model2",
+   "age_years": 20,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-051",
+   "model": "model4",
+   "age_years": 19,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-040",
+   "model": "model2",
+   "age_years": 4,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-068",
+   "model": "model3",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-038",
+   "model": "model4",
+   "age_years": 15,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-077",
+   "model": "model4",
+   "age_years": 12,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-083",
+   "model": "model4",
+   "age_years": 18,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-086",
+   "model": "model3",
+   "age_years": 2,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-079",
+   "model": "model3",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-055",
+   "model": "model3",
+   "age_years": 17,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-039",
+   "model": "model4",
+   "age_years": 0,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-076",
+   "model": "model2",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-008",
+   "model": "model3",
+   "age_years": 16,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-020",
+   "model": "model2",
+   "age_years": 16,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-018",
+   "model": "model3",
+   "age_years": 15,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-007",
+   "model": "model3",
+   "age_years": 20,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-006",
+   "model": "model3",
+   "age_years": 7,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-071",
+   "model": "model2",
+   "age_years": 18,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-046",
+   "model": "model4",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-041",
+   "model": "model4",
+   "age_years": 9,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-028",
+   "model": "model4",
+   "age_years": 1,
+   "risk": 0.0,
+   "drivers": [
+    "pressure 117 vs usual 100",
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-044",
+   "model": "model4",
+   "age_years": 7,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-078",
+   "model": "model4",
+   "age_years": 19,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-069",
+   "model": "model2",
+   "age_years": 19,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-012",
+   "model": "model3",
+   "age_years": 9,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-097",
+   "model": "model2",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-065",
+   "model": "model3",
+   "age_years": 15,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp2, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-004",
+   "model": "model3",
+   "age_years": 7,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-066",
+   "model": "model4",
+   "age_years": 6,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-033",
+   "model": "model3",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-025",
+   "model": "model4",
+   "age_years": 16,
+   "risk": 0.0,
+   "drivers": [
+    "pressure 112 vs usual 100",
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-009",
+   "model": "model4",
+   "age_years": 7,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-081",
+   "model": "model4",
+   "age_years": 1,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-067",
+   "model": "model4",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-011",
+   "model": "model2",
+   "age_years": 6,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2, comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-001",
+   "model": "model3",
+   "age_years": 18,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-036",
+   "model": "model4",
+   "age_years": 5,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-089",
+   "model": "model3",
+   "age_years": 17,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-003",
+   "model": "model3",
+   "age_years": 8,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-060",
+   "model": "model4",
+   "age_years": 3,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-054",
+   "model": "model2",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-048",
+   "model": "model4",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-050",
+   "model": "model4",
+   "age_years": 4,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-059",
+   "model": "model3",
+   "age_years": 17,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-075",
+   "model": "model3",
+   "age_years": 19,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp1, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-073",
+   "model": "model2",
+   "age_years": 20,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-002",
+   "model": "model4",
+   "age_years": 7,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-043",
+   "model": "model3",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp3"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-045",
+   "model": "model3",
+   "age_years": 14,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-032",
+   "model": "model4",
+   "age_years": 15,
+   "risk": 0.0,
+   "drivers": [
+    "not replaced for 60+ days: comp2, comp4"
+   ],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  },
+  {
+   "machine": "AZ-010",
+   "model": "model3",
+   "age_years": 10,
+   "risk": 0.0,
+   "drivers": [],
+   "actually_failed_next_24h": false,
+   "failed_component": null
+  }
+ ],
+ "failures_by_month": {
+  "months": [
+   "2015-01",
+   "2015-02",
+   "2015-03",
+   "2015-04",
+   "2015-05",
+   "2015-06",
+   "2015-07",
+   "2015-08",
+   "2015-09",
+   "2015-10",
+   "2015-11",
+   "2015-12"
+  ],
+  "series": {
+   "comp1": [
+    25,
+    19,
+    18,
+    15,
+    16,
+    15,
+    18,
+    15,
+    12,
+    9,
+    15,
+    15
+   ],
+   "comp2": [
+    30,
+    11,
+    15,
+    28,
+    21,
+    18,
+    24,
+    21,
+    19,
+    27,
+    23,
+    22
+   ],
+   "comp3": [
+    17,
+    7,
+    11,
+    11,
+    10,
+    12,
+    11,
+    12,
+    12,
+    8,
+    12,
+    8
+   ],
+   "comp4": [
+    22,
+    13,
+    15,
+    15,
+    17,
+    13,
+    11,
+    16,
+    16,
+    15,
+    12,
+    14
+   ]
+  }
+ },
+ "totals": {
+  "machines": 100,
+  "telemetry_rows": 876100,
+  "errors": 3919,
+  "maintenance": 3286,
+  "failures": 761
+ }
+}

@@ -1,0 +1,421 @@
+{
+ "source": "Loghub (logpai, GitHub): real system logs, 2,000-line samples per system. Please cite https://github.com/logpai/loghub.",
+ "systems": [
+  {
+   "system": "Android",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "setSystemUiVisibility vis=<*> mask=<*> oldVal=<*> newVal=<*> diff=<*> fullscreenStackVis=<*> dockedStackVis=<*>, fullscreenStackBounds=Rect(<*>, <*> - <*>, <*>)",
+     "count": 200
+    },
+    {
+     "pattern": "ready=true,policy=<*>,wakefulness=<*>,wksummary=<*>,uasummary=<*>,bootcompleted=true,boostinprogress=false,waitmodeenable=false,mode=false,manual=<*>,auto=<*>,a",
+     "count": 199
+    },
+    {
+     "pattern": "setLightsOn(true)",
+     "count": 181
+    },
+    {
+     "pattern": "HBM brightnessIn =<*>",
+     "count": 85
+    },
+    {
+     "pattern": "HBM brightnessOut =<*>",
+     "count": 85
+    }
+   ]
+  },
+  {
+   "system": "Apache",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "jk2_init() Found child <*> in scoreboard slot <*>",
+     "count": 836
+    },
+    {
+     "pattern": "workerEnv.init() ok <*>",
+     "count": 569
+    },
+    {
+     "pattern": "mod_jk child workerEnv in error state <*>",
+     "count": 539
+    },
+    {
+     "pattern": "[client <*>] Directory index forbidden by rule: <*>",
+     "count": 32
+    },
+    {
+     "pattern": "jk2_init() Can't find child <*> in scoreboard",
+     "count": 12
+    }
+   ]
+  },
+  {
+   "system": "BGL",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "generating core.<*>",
+     "count": 721
+    },
+    {
+     "pattern": "iar <*> dear <*>",
+     "count": 208
+    },
+    {
+     "pattern": "<*> floating point alignment exceptions",
+     "count": 121
+    },
+    {
+     "pattern": "<*> double-hummer alignment exceptions",
+     "count": 109
+    },
+    {
+     "pattern": "CE sym <*>, at <*>, mask <*>",
+     "count": 92
+    }
+   ]
+  },
+  {
+   "system": "HDFS",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "BLOCK* NameSystem.addStoredBlock: blockMap updated: <*>:<*> is added to blk_<*> size <*>",
+     "count": 314
+    },
+    {
+     "pattern": "PacketResponder <*> for block blk_<*> terminating",
+     "count": 311
+    },
+    {
+     "pattern": "Received block blk_<*> of size <*> from /<*>",
+     "count": 292
+    },
+    {
+     "pattern": "Receiving block blk_<*> src: /<*>:<*> dest: /<*>:<*>",
+     "count": 292
+    },
+    {
+     "pattern": "Deleting block blk_<*> file /<*>/blk_<*>",
+     "count": 263
+    }
+   ]
+  },
+  {
+   "system": "HPC",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "Linkerror event interval expired",
+     "count": 394
+    },
+    {
+     "pattern": "ambient=<*>",
+     "count": 292
+    },
+    {
+     "pattern": "normal",
+     "count": 206
+    },
+    {
+     "pattern": "warning",
+     "count": 205
+    },
+    {
+     "pattern": "running",
+     "count": 162
+    }
+   ]
+  },
+  {
+   "system": "Hadoop",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "Address change detected. Old: <*>/<*>:<*> New: <*>:<*>",
+     "count": 476
+    },
+    {
+     "pattern": "Failed to renew lease for [DFSClient_NONMAPREDUCE_<*>_<*>] for <*> seconds.  Will retry shortly ...",
+     "count": 326
+    },
+    {
+     "pattern": "Progress of TaskAttempt attempt_<*> is : <*>.<*>",
+     "count": 289
+    },
+    {
+     "pattern": "ERROR IN CONTACTING RM.",
+     "count": 147
+    },
+    {
+     "pattern": "Retrying connect to server: <*>:<*>. Already tried <*> time(s); retry policy is RetryUpToMaximumCountWithFixedSleep(maxRetries=<*>, sleepTime=<*> MILLISECONDS)",
+     "count": 146
+    }
+   ]
+  },
+  {
+   "system": "HealthApp",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "onExtend:<*> <*> <*> <*>",
+     "count": 273
+    },
+    {
+     "pattern": "onStandStepChanged <*>",
+     "count": 260
+    },
+    {
+     "pattern": "getTodayTotalDetailSteps = <*>##<*>##<*>##<*>##<*>##<*>",
+     "count": 242
+    },
+    {
+     "pattern": "setTodayTotalDetailSteps=<*>",
+     "count": 241
+    },
+    {
+     "pattern": "calculateCaloriesWithCache totalCalories=<*>",
+     "count": 241
+    }
+   ]
+  },
+  {
+   "system": "Linux",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "connection from <*> (<*>) at <*>:<*>:<*>",
+     "count": 909
+    },
+    {
+     "pattern": "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=<*>  user=root",
+     "count": 351
+    },
+    {
+     "pattern": "session closed for user <*>",
+     "count": 123
+    },
+    {
+     "pattern": "session opened for user <*> by (uid=<*>)",
+     "count": 122
+    },
+    {
+     "pattern": "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=<*>",
+     "count": 117
+    }
+   ]
+  },
+  {
+   "system": "Mac",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "com.apple.<*>: scheduler_evaluate_activity told me to run this job; however, but the start time isn't for <*> seconds.  Ignoring.",
+     "count": 166
+    },
+    {
+     "pattern": "Cocoa scripting error for '<*>': four character codes must be four characters long.",
+     "count": 71
+    },
+    {
+     "pattern": "AppleCamIn::systemWakeCall - messageType = <*>",
+     "count": 56
+    },
+    {
+     "pattern": "dnssd_clientstub ConnectToServer: connect()-> No of tries: <*>",
+     "count": 44
+    },
+    {
+     "pattern": "Thermal pressure state: <*> Memory pressure state: <*>",
+     "count": 39
+    }
+   ]
+  },
+  {
+   "system": "OpenSSH",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "Received disconnect from <*>: <*>: Bye Bye [preauth]",
+     "count": 413
+    },
+    {
+     "pattern": "pam_unix(sshd:auth): authentication failure; logname= uid=<*> euid=<*> tty=ssh ruser= rhost=<*> user=<*>",
+     "count": 384
+    },
+    {
+     "pattern": "Failed password for <*> from <*> port <*> ssh2",
+     "count": 383
+    },
+    {
+     "pattern": "pam_unix(sshd:auth): check pass; user unknown",
+     "count": 135
+    },
+    {
+     "pattern": "Failed password for invalid user <*> from <*> port <*> ssh2",
+     "count": 135
+    }
+   ]
+  },
+  {
+   "system": "OpenStack",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "<*> \"GET <*>\" status: <*> len: <*> time: <*>.<*>",
+     "count": 931
+    },
+    {
+     "pattern": "image <*> at (<*>): checking",
+     "count": 82
+    },
+    {
+     "pattern": "image <*> at (<*>): in use: on this node <*> local, <*> on other nodes sharing this instance storage",
+     "count": 82
+    },
+    {
+     "pattern": "Active base files: <*>",
+     "count": 82
+    },
+    {
+     "pattern": "<*> \"POST <*>\" status: <*> len: <*> time: <*>.<*>",
+     "count": 64
+    }
+   ]
+  },
+  {
+   "system": "Proxifier",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "<*>:<*> open through proxy <*>:<*> HTTPS",
+     "count": 954
+    },
+    {
+     "pattern": "<*> close, <*> bytes<*>sent, <*> bytes<*>received, lifetime <*>",
+     "count": 947
+    },
+    {
+     "pattern": "<*>:<*> error : A connection request was canceled before the completion.",
+     "count": 31
+    },
+    {
+     "pattern": "<*>:<*> error : Could not connect to proxy <*>:<*> - connection attempt failed with error <*>",
+     "count": 26
+    },
+    {
+     "pattern": "<*>:<*> error : Could not connect to proxy <*>:<*> - Could not resolve <*> error <*>",
+     "count": 20
+    }
+   ]
+  },
+  {
+   "system": "Spark",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "Times: total = <*>, boot = <*>, init = <*>, finish = <*>",
+     "count": 375
+    },
+    {
+     "pattern": "Got assigned task <*>",
+     "count": 305
+    },
+    {
+     "pattern": "Running task <*> in stage <*> (TID <*>)",
+     "count": 305
+    },
+    {
+     "pattern": "Finished task <*> in stage <*> (TID <*>). <*> bytes result sent to driver",
+     "count": 300
+    },
+    {
+     "pattern": "Found block rdd_<*> locally",
+     "count": 257
+    }
+   ]
+  },
+  {
+   "system": "Thunderbird",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "data_thread() got not answer from any [Thunderbird_<*>] datasource",
+     "count": 819
+    },
+    {
+     "pattern": "synchronized to <*>, stratum <*>",
+     "count": 568
+    },
+    {
+     "pattern": "[ib_sm_sweep.c:1831]: ********************** NEW SWEEP ********************",
+     "count": 62
+    },
+    {
+     "pattern": "[ib_sm_sweep.c:1455]: No topology change",
+     "count": 62
+    },
+    {
+     "pattern": "[ib_sm_sweep.c:1482]: No configuration change required",
+     "count": 62
+    }
+   ]
+  },
+  {
+   "system": "Windows",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "Session: <*>_<*> initialized by client WindowsUpdateAgent.",
+     "count": 608
+    },
+    {
+     "pattern": "Read out cached package applicability for package: <*>, ApplicableState: <*>, CurrentState:<*>",
+     "count": 558
+    },
+    {
+     "pattern": "Warning: Unrecognized packageExtended attribute.",
+     "count": 280
+    },
+    {
+     "pattern": "Expecting attribute name [HRESULT = <*> - CBS_E_MANIFEST_INVALID_ITEM]",
+     "count": 224
+    },
+    {
+     "pattern": "Failed to get next element [HRESULT = <*> - CBS_E_MANIFEST_INVALID_ITEM]",
+     "count": 224
+    }
+   ]
+  },
+  {
+   "system": "Zookeeper",
+   "lines": 2000,
+   "top_patterns": [
+    {
+     "pattern": "Interrupted while waiting for message on queue",
+     "count": 314
+    },
+    {
+     "pattern": "Received connection request /<*>:<*>",
+     "count": 299
+    },
+    {
+     "pattern": "Connection broken for id <*>, my id = <*>, error =",
+     "count": 291
+    },
+    {
+     "pattern": "Interrupting SendWorker",
+     "count": 266
+    },
+    {
+     "pattern": "Send worker leaving thread",
+     "count": 262
+    }
+   ]
+  }
+ ]
+}
