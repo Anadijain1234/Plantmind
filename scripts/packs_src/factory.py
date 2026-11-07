@@ -92,7 +92,7 @@ def build():
         "cost_per_hour": 6000,
         "sites": [{"id": "blr", "name": "Bengaluru plant (Peenya)"}, {"id": "pune", "name": "Pune plant (Chakan)"}],
         "roles": [
-            {"id": "technician", "name": "Maintenance technician", "can_approve": False, "tools": ["ask", "log", "memory", "playbook", "quiz", "passport", "sensors", "fleet", "check"]},
+            {"id": "technician", "name": "Maintenance technician", "can_approve": False, "tools": ["ask", "log", "quiz", "sensors"]},
             {"id": "supervisor", "name": "Maintenance supervisor", "can_approve": True, "tools": ["ask", "log", "memory", "approvals", "playbook", "risk", "interview", "shift", "skills", "passport", "stats", "sensors", "fleet", "check", "quiz"]},
             {"id": "manager", "name": "Plant head", "can_approve": True, "tools": ["stats", "risk", "shift", "skills", "passport", "fleet", "sensors", "ask", "memory", "approvals", "playbook", "interview", "quiz", "check"]},
         ],

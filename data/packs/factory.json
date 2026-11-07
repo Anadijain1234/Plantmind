@@ -37,13 +37,8 @@
    "tools": [
     "ask",
     "log",
-    "memory",
-    "playbook",
     "quiz",
-    "passport",
-    "sensors",
-    "fleet",
-    "check"
+    "sensors"
    ]
   },
   {

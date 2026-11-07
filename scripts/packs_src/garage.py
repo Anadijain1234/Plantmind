@@ -92,7 +92,7 @@ def build():
         "cost_per_hour": 800,
         "sites": [{"id": "wf", "name": "Whitefield workshop"}, {"id": "hb", "name": "Hebbal workshop"}],
         "roles": [
-            {"id": "mechanic", "name": "Mechanic", "can_approve": False, "tools": ["ask", "log", "memory", "playbook", "quiz", "passport", "obd"]},
+            {"id": "mechanic", "name": "Mechanic", "can_approve": False, "tools": ["ask", "log", "quiz", "obd"]},
             {"id": "advisor", "name": "Service advisor", "can_approve": False, "tools": ["ask", "memory", "stats", "shift", "obd", "quiz", "passport"]},
             {"id": "head", "name": "Workshop head", "can_approve": True, "tools": ["ask", "log", "memory", "approvals", "playbook", "risk", "interview", "shift", "skills", "passport", "stats", "obd", "quiz"]},
         ],

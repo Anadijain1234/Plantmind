@@ -69,7 +69,7 @@ def create(name, description=""):
                 "ustaad_started": date.today().isoformat()},
         "labels": labels, "cost_per_hour": 2000, "sites": [{"id": "main", "name": "Main site"}],
         "roles": [
-            {"id": "worker", "name": labels["person"], "can_approve": False, "tools": ["ask", "log", "memory", "playbook", "quiz", "passport"]},
+            {"id": "worker", "name": labels["person"][:1].upper() + labels["person"][1:], "can_approve": False, "tools": ["ask", "log", "quiz"]},
             {"id": "senior", "name": "Senior / supervisor", "can_approve": True,
              "tools": ["ask", "log", "memory", "approvals", "playbook", "risk", "interview", "shift", "skills", "passport", "stats", "quiz"]}],
         "tools": [], "safety_line": str(data.get("safety_line", ""))[:160],
@@ -87,4 +87,5 @@ def create(name, description=""):
             memory.cloud.setup_bank(pid)
         except Exception as e:  # bank may already exist
             memory.last_error = f"Hindsight bank for {pid}: {e}"
-    return {"id": pid, "name": pack["name"], "generated_by": "Groq LLM" if llm.available() else "template (no LLM key)"}
+    used_ai = isinstance(data, dict) and data.get("org_name") and not data.get("org_name", "").endswith("Co. (demo)")
+    return {"id": pid, "name": pack["name"], "generated_by": (llm.last_provider or "AI") if used_ai else "template"}

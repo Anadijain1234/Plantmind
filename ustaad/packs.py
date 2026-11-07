@@ -21,7 +21,22 @@ def _load(industry):
     for d in _dirs():
         path = d / f"{industry}.json"
         if path.exists():
-            return json.loads(path.read_text(encoding="utf-8"))
+            p = json.loads(path.read_text(encoding="utf-8"))
+            for r in p.get("roles", []):
+                t = list(r.get("tools", []))
+                if "machines" not in t:  # every role gets the machine register ("My machines")
+                    t.insert(min(len(t), 3 if not r.get("can_approve") else 2), "machines")
+                if "stats" in t and "coverage" not in t:
+                    i = t.index("stats")
+                    if i <= 2:  # managers: the ROI dashboard is the first screen
+                        t.remove("stats")
+                        t.insert(0, "stats")
+                        i = 0
+                    t.insert(i + 1, "coverage")  # the coverage map sits right after the ROI dashboard
+                if "leaderboard" not in t:  # everyone sees the leaderboard (credit motivates sharing)
+                    t.append("leaderboard")
+                r["tools"] = t
+            return p
     return None
 
 
@@ -45,13 +60,23 @@ def summary(industry):
     p = get(industry)
     return {k: p.get(k) for k in ("id", "name", "icon", "color", "tagline", "labels", "org", "banner", "sites", "roles",
                                   "tools", "questions", "cost_per_hour", "coming_soon")} | {
-        "counts": {"assets": len(p.get("assets", [])), "people": len(p.get("people", [])),
+        "counts": {"assets": len(assets(industry)), "people": len(p.get("people", [])),
                    "records": len(p.get("records", [])), "tips": len(p.get("tips", [])),
                    "public": len(p.get("public", []))}}
 
 
 def assets(industry):
-    return get(industry).get("assets", [])
+    """The pack's own items plus the ones the team added in 'My machines' (added details override the pack's)."""
+    from . import store  # late import: store imports packs
+    base = [dict(a) for a in get(industry).get("assets", [])]
+    by_id = {a["id"]: a for a in base}
+    for m in store.machines(industry):
+        if m["id"] in by_id:
+            by_id[m["id"]].update({k: v for k, v in m.items() if v not in (None, "", [])})
+        else:
+            base.append(m)
+            by_id[m["id"]] = m
+    return base
 
 
 def asset(industry, aid):

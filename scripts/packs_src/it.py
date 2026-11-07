@@ -76,7 +76,7 @@ def build():
         "cost_per_hour": 50000,
         "sites": [{"id": "blr", "name": "Bengaluru region"}, {"id": "hyd", "name": "Hyderabad region"}],
         "roles": [
-            {"id": "oncall", "name": "On-call engineer", "can_approve": False, "tools": ["ask", "log", "memory", "playbook", "quiz", "passport", "outages"]},
+            {"id": "oncall", "name": "On-call engineer", "can_approve": False, "tools": ["ask", "log", "quiz", "outages"]},
             {"id": "lead", "name": "SRE lead", "can_approve": True, "tools": ["ask", "log", "memory", "approvals", "playbook", "risk", "interview", "shift", "skills", "passport", "stats", "outages", "quiz"]},
             {"id": "em", "name": "Engineering manager", "can_approve": True, "tools": ["stats", "risk", "shift", "skills", "passport", "ask", "memory", "approvals", "playbook", "interview", "outages", "quiz"]},
         ],

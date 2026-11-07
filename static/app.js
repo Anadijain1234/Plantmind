@@ -5,14 +5,47 @@ const app = $("#app");
 const S = { status: null, industries: null, packs: {}, ind: null, role: null, person: null, lang: "en", prefill: null, charts: [] };
 
 const TOOLS = {
-  ask: ["💬", "Ask Ustaad"], log: ["🎙️", "Log work"], memory: ["🧠", "Memory"], approvals: ["✅", "Approvals"],
+  ask: ["💬", "Ask Ustaad"], log: ["✍️", "I fixed something"], memory: ["🧠", "Memory"], approvals: ["✅", "Approvals"],
   playbook: ["📋", "SOP / playbook"], risk: ["⚠️", "Risk radar"], interview: ["🎤", "Exit interview"], shift: ["🔁", "Shift report"],
-  skills: ["🧩", "Skill map"], passport: ["🪪", "Skill passport"], stats: ["📈", "Impact & ₹"], quiz: ["🎓", "Onboarding quiz"],
+  skills: ["🧩", "Skill map"], passport: ["🏅", "Skill passport"], stats: ["📈", "ROI dashboard"], quiz: ["🎓", "Learn (quiz)"],
   sensors: ["📡", "Live sensors"], fleet: ["🔮", "Failure prediction"], check: ["🧮", "Failure check"], dishes: ["🍽️", "Customer & hygiene data"],
   checklist: ["✔️", "OT checklist"], devices: ["🩺", "Device reports"], obd: ["🔧", "OBD codes"], outages: ["🌐", "Outage library"],
+  machines: ["🏭", "My machines"], coverage: ["🗺️", "Knowledge coverage"], leaderboard: ["🏆", "Expert leaderboard"],
 };
+// one plain line on top of every screen: what is this?
+const HELP = {
+  ask: "Describe a problem. Ustaad finds what your team did before, who did it and whether it worked.",
+  log: "Just fixed something? Say it in any language. It becomes a memory for the next person.",
+  machines: "Every machine in one place: details, health, service due, spare parts, fix history, who knows it best — and a QR sticker.",
+  memory: "Everything Ustaad remembers, with how much to trust each memory.",
+  approvals: "New knowledge waits here until a senior checks it.",
+  playbook: "One printable standard procedure, built only from fixes that actually worked.",
+  risk: "Which know-how leaves the building if a senior person leaves.",
+  interview: "Questions for a leaving expert — only about things nobody has written down yet.",
+  shift: "A handover note built from real records, sensor alerts and low spare parts.",
+  skills: "Who has proven fixes on which machine.",
+  passport: "Proof of a person's skills, built from fixes that worked.",
+  stats: "ROI dashboard: downtime hours saved, repeat failures avoided, fixed vs failed, ₹ saved — before vs after Ustaad.",
+  coverage: "How much of each machine's know-how is captured, and where only one person knows it.",
+  leaderboard: "Who shares knowledge that others actually use. Points for fixes that worked and fixes others reused.",
+  quiz: "New joiners learn from this team's own past problems.",
+  sensors: "Sensors say something is wrong. Ustaad logs it by itself and shows what fixed it last time.",
+  fleet: "A model trained on public data guesses which machine may fail next.",
+  check: "Enter machine settings — rules from 10,000 public runs say what may fail.",
+  dishes: "Real customer-complaint and hygiene data behind the kitchen memories.",
+  checklist: "The WHO surgical safety checklist plus this hospital's own additions.",
+  devices: "Real FDA reports about ventilators and pumps.",
+  obd: "What a car's error code means, plus what our mechanics found.",
+  outages: "240 real public outage write-ups next to the team's own incidents.",
+};
+const GROUPS = [["Daily work", ["ask", "log", "machines"]], ["Team knowledge", ["memory", "approvals", "playbook", "quiz", "interview", "leaderboard"]],
+  ["For managers", ["stats", "coverage", "risk", "shift", "skills", "passport"]]];
+const OUTCOME = { fixed: "Worked", failed_again: "Didn't work", temporary: "Temporary", open: "Still open" };
 const TIER = { verified: ["b-verified", "✔ Verified"], tested: ["b-tested", "Tested once"], unreviewed: ["b-unreviewed", "Unreviewed"],
-  failed: ["b-failed", "✖ Didn't work"], public: ["b-public", "Public record"], attested: ["b-attested", "Attested"], self: ["b-self", "Self-declared"] };
+  failed: ["b-failed", "✖ Didn't work"], public: ["b-public", "Public record"], attested: ["b-attested", "Attested"], self: ["b-self", "Self-declared"],
+  manual: ["b-manual", "📘 Maker's manual"], insight: ["b-insight", "🧠 Pattern Hindsight learned"], hfact: ["b-insight", "🧠 From Hindsight"], sensor: ["b-verified", "📡 Sensor-confirmed"] };
+const toolName = (t) => (t === "machines" && S.ind && pack() ? `My ${L().assets.toLowerCase()}` : TOOLS[t][1]);
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } } };
 
 // ---------- helpers ----------
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -35,13 +68,15 @@ function tierBadge(t) { const [c, l] = TIER[t?.tier || t] || ["b-src", t?.tier |
 function clearCharts() { S.charts.forEach((c) => c.destroy()); S.charts = []; }
 const PALETTE = ["#e8833a", "#16202e", "#0f766e", "#1d4ed8", "#b91c1c", "#7c3aed", "#ca8a04", "#64748b"];
 function pack() { return S.packs[S.ind]; }
+const nm = (a) => { const n = String(a?.name || ""); return a?.id && n.startsWith(a.id) ? n.slice(a.id.length).replace(/^\s*[·:—-]\s*/, "") || n : n; };
 function L() { return pack().labels; }
-function assetOptions(selected, includeAll = false) {
+function assetOptions(selected, includeAll = false, includeAny = false) {
   const p = pack(); const bySite = {};
   p.assets.forEach((a) => { (bySite[a.site] = bySite[a.site] || []).push(a); });
   let h = includeAll ? `<option value="ALL">All ${esc(L().assets.toLowerCase())}</option>` : "";
+  if (includeAny) h += `<option value="ANY" ${selected === "ANY" ? "selected" : ""}>🤷 Not sure — search everything</option>`;
   for (const s of p.sites) {
-    h += `<optgroup label="${esc(s.name)}">` + (bySite[s.id] || []).map((a) => `<option value="${a.id}" ${a.id === selected ? "selected" : ""}>${esc(a.id)} — ${esc(a.name)}</option>`).join("") + "</optgroup>";
+    h += `<optgroup label="${esc(s.name)}">` + (bySite[s.id] || []).map((a) => `<option value="${a.id}" ${a.id === selected ? "selected" : ""}>${esc(a.id)} — ${esc(nm(a))}</option>`).join("") + "</optgroup>";
   }
   return h;
 }
@@ -64,7 +99,7 @@ async function toggleVoice(btn, onText) {
       try {
         const fd = new FormData(); fd.append("audio", new Blob(chunks, { type: "audio/webm" }), "voice.webm");
         const lang = { hi: "hi", kn: "kn", hinglish: "hi" }[S.lang]; if (lang) fd.append("language", lang);
-        const r = await api("/api/voice", { method: "POST", body: fd }); onText(r.text); toast("🎙️ Got it: " + esc(r.text.slice(0, 120)));
+        const r = await api("/api/voice", { method: "POST", body: fd }); onText(r.text); toast(`🎙️ Got it${r.engine ? " (" + esc(r.engine) + ")" : ""}: ` + esc(r.text.slice(0, 120)));
       } catch (e) { toast(esc(e.message), "alert"); }
       btn.innerHTML = "🎙️";
     };
@@ -89,8 +124,13 @@ async function loadStatus() {
     const m = $("#chip-mem"), l = $("#chip-llm"); const cloud = S.status.memory.startsWith("Hindsight");
     m.className = "chip " + (cloud ? "on" : "off"); m.lastElementChild.textContent = cloud ? "Hindsight memory" : "Practice memory (offline)";
     m.title = S.status.memory_error || (cloud ? "One Hindsight memory bank per industry" : "Add HINDSIGHT_API_KEY to use Hindsight Cloud");
-    l.className = "chip " + (S.status.llm ? "on" : "off"); l.lastElementChild.textContent = S.status.llm ? "Groq AI on" : "AI off (rule-based)";
+    l.className = "chip " + (S.status.llm ? "on" : "off");
+    l.lastElementChild.textContent = S.status.groq && S.status.sarvam ? "Groq + Sarvam on" : S.status.groq ? "Groq AI on" : S.status.sarvam ? "Sarvam AI on" : "AI off (rule-based)";
     l.title = S.status.llm ? S.status.llm_model : "Add GROQ_API_KEY for AI answers, voice and photos";
+    const sv = $("#chip-save"), au = S.status.autosave || {};
+    if (au.enabled) { sv.classList.remove("hidden"); sv.className = "chip " + (au.ready && !au.last_error ? "on" : "off");
+      sv.lastElementChild.textContent = au.ready && !au.last_error ? "💾 Auto-save on" : "💾 Auto-save paused";
+      sv.title = au.last_error || `Everything added here is saved to ${au.where}${au.last_saved ? " · last saved " + au.last_saved.replace("T", " ") : ""} and comes back after a restart.`; }
   } catch (e) { /* ignore */ }
 }
 
@@ -104,6 +144,9 @@ async function renderHome() {
       <div class="kicker">Expert memory for any industry</div>
       <h1>When your best expert leaves,<br>their know-how shouldn't.</h1>
       <p class="lead">Ustaad remembers what your senior people did and whether it worked, gives it to the next person at the right moment, and gets better every time someone taps <b>worked</b> or <b>didn't work</b>.</p>
+      <div class="row" style="margin-top:14px"><button class="btn accent big" id="try30">▶ Try it in 30 seconds</button>
+        <span class="small muted">You become a new technician. A machine is whistling. See what Ustaad remembers.</span></div>
+      <div id="home-roi" class="home-roi"></div>
     </div>
     <div class="loop">
       <div class="step"><b>1 · Capture</b><span class="small muted">Voice, text or photo — Hindi, Kannada, English</span></div>
@@ -132,6 +175,11 @@ async function renderHome() {
     <div class="out"><span class="small">Estimated saving per year</span><b id="roi-out">—</b><span class="tiny" style="opacity:.75">Demo factory data shows repair time falling about 50% after Ustaad started. Your result will differ.</span></div>
   </div></div>
   <p class="tiny muted" style="margin-top:20px">Demo data: people and companies are fictional; facts come from public sources (ISO 10816, FSSAI, WHO checklist, FDA MAUDE, NHTSA, NYC inspections, Zomato reviews, public post-mortems, Microsoft Azure & AI4I datasets).</p>`;
+  api("/api/i/factory/stats").then((d) => { const r = d.roi || {}; const box = $("#home-roi"); if (!box) return;
+    box.innerHTML = `<span class="tiny muted">In the sample factory since Ustaad started:</span>
+      <span><b>${r.hours_saved} h</b> downtime saved</span><span><b>${r.repeat_failures_avoided}</b> repeat failures avoided</span>
+      <span><b>${r.fixed_rate}%</b> of fixes worked</span><span><b>${rupees(d.money_saved)}</b> saved</span>`; }).catch(() => {});
+  $("#try30").onclick = () => { S.prefill = { asset_id: "CNC-3", problem: "CNC-3 alarm 2041 with a whistling sound at high rpm", auto: true }; go("#/i/factory/technician/ask"); };
   $("#cu-go").onclick = async () => {
     const btn = $("#cu-go"); btn.disabled = true; btn.innerHTML = spin;
     try { const r = await api("/api/packs/custom", { json: { name: $("#cu-name").value } }); S.industries = null; delete S.packs[r.id];
@@ -152,11 +200,11 @@ async function renderRoles(ind) {
   <div class="panel-head"><div><h1 style="font-size:34px">${p.icon} ${esc(p.org.name)}</h1><p class="muted">${esc(p.org.note)}</p></div>
     <div class="row">${p.sites.map((s) => `<span class="badge b-site">📍 ${esc(s.name)}</span>`).join("")}</div></div>
   ${p.banner ? `<div class="banner" style="margin-bottom:14px">🛡️ ${esc(p.banner)}</div>` : ""}
-  <h2>Who are you today?</h2><p class="muted small" style="margin-top:-4px">Each role sees its own tools. Seniors can approve new knowledge.</p>
-  <div class="grid g3">${p.roles.map((r) => `
-    <button class="role-card" data-role="${r.id}"><h3>${esc(r.name)}</h3>
-      <span class="small muted">${r.can_approve ? "✅ Can approve new memories" : "Uses and adds knowledge"}</span>
-      <div class="tools">${r.tools.slice(0, 9).map((t) => `<span class="badge b-src">${TOOLS[t][0]} ${TOOLS[t][1]}</span>`).join("")}</div></button>`).join("")}
+  <h2>Who are you today?</h2><p class="muted small" style="margin-top:-4px">Pick one. First time here? Start as the first one — the person on the floor.</p>
+  <div class="grid g3">${p.roles.map((r, i) => `
+    <button class="role-card ${i === 0 && !r.can_approve ? "rec" : ""}" data-role="${r.id}">${i === 0 && !r.can_approve ? '<span class="badge b-verified" style="float:right">Start here</span>' : ""}<h3>${esc(r.name)}</h3>
+      <span class="small">${r.can_approve ? "Senior: uses knowledge, approves new memories, adds machines." : "On the floor: asks Ustaad, tells it what worked."}</span>
+      <div class="tools">${r.tools.slice(0, 6).map((t) => `<span class="badge b-src">${TOOLS[t][0]} ${t === "machines" ? "My " + esc(p.labels.assets.toLowerCase()) : TOOLS[t][1]}</span>`).join("")}</div></button>`).join("")}
   </div>
   <h2 style="margin-top:26px">The people</h2>
   <div class="grid g4">${p.people.map((x) => `<div class="card"><b>${esc(x.name)}</b><div class="small muted">${esc(x.role)}</div>
@@ -170,44 +218,62 @@ function defaultPerson(role) {
   if (r?.can_approve) return (ppl.find((p) => !p.retiring_on) || ppl[0]).id;
   return [...ppl].sort((a, b) => a.experience_years - b.experience_years)[0].id;  // workers: the newest joiner
 }
-async function renderWorkspace(ind, role, tool) {
+function sideLinks(ind, role, tools, tool) {
+  const used = new Set(); let h = "";
+  const link = (t) => `<a href="#/i/${ind}/${role}/${t}" class="${t === tool ? "on" : ""}"><span>${TOOLS[t][0]}</span><span>${esc(toolName(t))}</span></a>`;
+  for (const [name, ids] of GROUPS) {
+    const mine = ids.filter((t) => tools.includes(t)); if (!mine.length) continue;
+    mine.forEach((t) => used.add(t)); h += `<div class="grp">${name}</div>` + mine.map(link).join("");
+  }
+  const rest = tools.filter((t) => !used.has(t) && TOOLS[t]);
+  if (rest.length) h += `<div class="grp">Data & tools</div>` + rest.map(link).join("");
+  return h;
+}
+async function renderWorkspace(ind, role, tool, sub) {
   const p = await loadPack(ind);
   if (S.role !== role || !S.person || !p.people.find((x) => x.id === S.person)) { S.role = role; S.person = defaultPerson(role); }
   const r = roleObj(); if (!r.tools.includes(tool)) tool = r.tools[0];
   app.innerHTML = `
-  <div class="crumbs"><a href="#/">Industries</a> › <a href="#/i/${ind}">${esc(p.name)}</a> › <span>${esc(r.name)}</span> › <b>${TOOLS[tool][1]}</b></div>
+  <div class="crumbs"><a href="#/">Industries</a> › <a href="#/i/${ind}">${esc(p.name)}</a> › <span>${esc(r.name)}</span> › <b>${esc(toolName(tool))}</b></div>
   <div class="ws">
     <nav class="side">
       <div class="who"><div class="tiny muted">${p.icon} ${esc(p.org.name)}</div><label class="tiny muted" style="display:block;margin-top:6px">You are</label>
         <select id="who" class="field" style="padding:5px 8px;font-size:13px">${personOptions(S.person)}</select></div>
-      ${r.tools.map((t) => `<a href="#/i/${ind}/${role}/${t}" class="${t === tool ? "on" : ""}"><span>${TOOLS[t][0]}</span><span>${TOOLS[t][1]}</span></a>`).join("")}
+      ${sideLinks(ind, role, r.tools, tool)}
     </nav>
-    <section id="panel">${p.banner ? `<div class="banner" style="margin-bottom:12px">🛡️ ${esc(p.banner)}</div>` : ""}<div id="tool"></div></section>
+    <section id="panel">${p.banner ? `<div class="banner" style="margin-bottom:12px">🛡️ ${esc(p.banner)}</div>` : ""}
+      ${HELP[tool] ? `<div class="help no-print">ⓘ <b>What is this?</b> ${esc(HELP[tool])}</div>` : ""}<div id="tool"></div></section>
   </div>`;
   $("#who").onchange = (e) => { S.person = e.target.value; };
   clearCharts();
   const el = $("#tool");
-  try { await (VIEWS[tool] || VIEWS.ask)(el); } catch (e) { el.innerHTML = `<div class="card"><b>Something went wrong.</b><p class="muted">${esc(e.message)}</p></div>`; }
+  try { await (VIEWS[tool] || VIEWS.ask)(el, sub); } catch (e) { el.innerHTML = `<div class="card"><b>Something went wrong.</b><p class="muted">${esc(e.message)}</p></div>`; }
 }
 
 // ---------- ask ----------
 const VIEWS = {};
 VIEWS.ask = async (el) => {
   const p = pack(); const pre = S.prefill || {}; S.prefill = null;
-  const aid = pre.asset_id || p.assets[0].id;
+  const aid = pre.asset_id || "ANY";
   el.innerHTML = `
   <div class="panel-head"><div><h2>Ask Ustaad</h2><p class="muted small">Describe the problem like you'd tell a senior. Speak, type or snap a photo.</p></div>
     <div class="toggle" id="memtog"><button class="on" data-v="1">Memory ON</button><button data-v="0">Memory OFF</button></div></div>
   <div class="card stack">
-    <div><label class="f">${esc(L().asset)}</label><select id="a-asset" class="field">${assetOptions(aid)}</select></div>
+    <div><label class="f">${esc(L().asset)} <span class="muted small">(optional — pick one if you know it)</span></label><select id="a-asset" class="field">${assetOptions(aid, false, true)}</select></div>
     <div><label class="f">Problem</label><textarea id="a-q" class="field" placeholder="e.g. ${esc(p.questions[0])}">${esc(pre.problem || "")}</textarea></div>
     <div class="row">
       <button class="iconbtn" id="a-mic" title="Speak">🎙️</button><button class="iconbtn" id="a-cam" title="Photo of the problem">📷</button>
       <span class="spacer" style="flex:1"></span><button class="btn accent" id="a-go">Ask Ustaad →</button></div>
-    <div class="row">${p.questions.map((q) => `<button class="sample">${esc(q)}</button>`).join("")}</div>
+    <div class="row"><span class="tiny muted">Try:</span>${p.questions.map((q) => `<button class="sample">${esc(q)}</button>`).join("")}</div>
     <div id="a-photo" class="small muted"></div>
   </div>
+  ${store.get("ustaad-hints") ? "" : `<div class="hints" id="hints"><b>3 things to know</b>
+    <ol><li><b>Ask like you'd ask a senior</b> — type, 🎙️ speak (Hindi/Kannada/English) or 📷 snap the alarm screen.</li>
+    <li><b>Memory ON / OFF</b> — OFF is a normal chatbot. ON is your team's real history. Try both.</li>
+    <li><b>Tap ✔ Worked or ✖ Didn't work</b> after fixing — that is how Ustaad learns.</li></ol>
+    <button class="btn sm" id="hints-x">Got it</button></div>`}
   <div id="a-out" style="margin-top:16px"></div>`;
+  if ($("#hints-x")) $("#hints-x").onclick = () => { store.set("ustaad-hints", "1"); $("#hints").remove(); };
   let useMem = true;
   $$("#memtog button").forEach((b) => (b.onclick = () => { useMem = b.dataset.v === "1"; $$("#memtog button").forEach((x) => x.classList.toggle("on", x === b)); b.classList.toggle("off-state", !useMem); }));
   $$(".sample", el).forEach((b) => (b.onclick = () => {
@@ -235,63 +301,103 @@ function renderAnswer(out, res) {
     return;
   }
   const a = res.answer, t = res.trust;
+  if (t.level === "offtopic") {
+    out.innerHTML = `<div class="card answer"><div class="trust offtopic">🛑 ${esc(t.label)}</div>
+      <p style="font-size:16px;margin-top:12px">${esc(a.summary)}</p>
+      <p class="small muted">Ustaad answers work problems at ${esc(pack().org.name)}. Try one of these:</p>
+      <div class="row">${pack().questions.map((q) => `<button class="sample" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+      <p class="tiny muted" style="margin-top:10px">Written by ${esc(res.written_by)}</p></div>`;
+    $$("[data-q]", out).forEach((b) => (b.onclick = () => { $("#a-q").value = b.dataset.q; window.scrollTo({ top: 0, behavior: "smooth" }); }));
+    return;
+  }
   const refs = (arr) => (arr || []).map((r) => `<span class="ref" data-ref="${esc(r)}">${esc(r)}</span>`).join("");
+  const used = res.memories.filter((m) => m.used), other = res.memories.filter((m) => !m.used);
+  const icon = { verified: "✔", off: "○", new: "✚" }[t.level] || "◐";
+  const parts = a.parts_status || [];
   out.innerHTML = `
   <div class="grid" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)" id="ans-grid">
     <div class="card answer">
-      <div class="trust ${t.level}">${t.level === "verified" ? "✔" : t.level === "off" ? "○" : "◐"} ${esc(t.label)}</div>
+      <div class="trust ${t.level}">${icon} ${esc(t.label)}</div>
       <p style="font-size:16px;margin-top:12px" data-tr>${esc(a.summary)}</p>
+      ${a.manual_vs_team ? `<div class="mvt">📘 vs 🧑‍🔧 <b>Manual says vs. team found:</b> <span data-tr>${esc(a.manual_vs_team)}</span></div>` : ""}
       ${a.check_first ? `<div class="first">👉 Check first: <span data-tr>${esc(a.check_first)}</span></div>` : ""}
-      ${a.likely_causes?.length ? `<h3>Likely causes</h3><ul>${a.likely_causes.map((c) => `<li><b data-tr>${esc(c.cause)}</b> <span class="badge ${c.confidence === "high" ? "b-verified" : c.confidence === "medium" ? "b-tested" : "b-self"}">${esc(c.confidence)}</span>${refs(c.memory_refs)}<div class="small muted" data-tr>${esc(c.why)}</div></li>`).join("")}</ul>` : ""}
       ${a.steps?.length ? `<h3>Steps</h3><ol id="steps">${a.steps.map((s) => `<li data-tr>${esc(s)}</li>`).join("")}</ol>
-        <button class="btn sm" id="btn-guided">▶ Start guided mode (tick each step)</button><ul class="guided hidden" id="guided"></ul>` : ""}
-      ${a.avoid?.length ? `<h3>Don't repeat</h3><ul class="avoid">${a.avoid.map((x) => `<li><span data-tr>${esc(x.action)}</span>${refs(x.memory_refs)}<div class="small muted" data-tr>${esc(x.why)}</div></li>`).join("")}</ul>` : ""}
-      ${a.expert_tip ? `<div class="tipbox" style="margin-top:12px">💡 <b>Expert tip:</b> <span data-tr>${esc(a.expert_tip)}</span></div>` : ""}
-      <p class="small muted" style="margin-top:10px">${a.estimated_time ? `⏱ ${esc(a.estimated_time)} · ` : ""}${a.safety ? `🦺 <span data-tr>${esc(a.safety)}</span>` : ""}</p>
-      <div class="row no-print" style="margin-top:6px"><span class="small muted">Translate:</span>
-        <button class="btn sm" data-tl="hi">हिन्दी</button><button class="btn sm" data-tl="kn">ಕನ್ನಡ</button><button class="btn sm" data-tl="en">English</button>
-        <span class="tiny muted" style="margin-left:auto">Written by ${esc(res.written_by)} · memory: ${esc(res.memory_mode)}</span></div>
+        <button class="btn sm" id="btn-guided">▶ Guided mode (tick each step)</button><ul class="guided hidden" id="guided"></ul>` : ""}
+      ${parts.length ? `<div class="partsbox">📦 <b>Spare parts:</b> ${parts.map((x) => `<span class="badge ${x.status === "out" ? "b-failed" : x.status === "low" ? "b-unreviewed" : "b-verified"}">${esc(x.name)}${x.part_no ? " · " + esc(x.part_no) : ""} — ${x.status === "out" ? "0 in store, order now" : x.status === "low" ? `only ${x.stock} left` : x.status === "ok" ? `${x.stock} in store` : "stock unknown"}</span>`).join(" ")}</div>` : ""}
       ${res.use_memory ? `<div class="card" style="margin-top:14px;background:#fbf8f3" id="fb">
         <b>Did it work?</b> <span class="small muted">Your answer becomes a new memory — this is how Ustaad learns.</span>
+        ${res.asset.id === "ANY" ? `<div style="margin-top:8px"><label class="f">Which ${esc(L().asset.toLowerCase())} was it?</label><select id="fb-asset" class="field">${assetOptions(guessAsset(res))}</select></div>` : ""}
         <div class="row" style="margin-top:8px"><select id="fb-who" class="field" style="max-width:260px">${personOptions(S.person)}</select>
           <input id="fb-min" class="field" type="number" placeholder="Minutes it took" style="max-width:150px">
           <input id="fb-note" class="field" placeholder="What you actually did (optional)" style="flex:1;min-width:180px"></div>
         <div class="row" style="margin-top:8px"><button class="btn ok" id="fb-ok">✔ Worked</button><button class="btn bad" id="fb-no">✖ Didn't work</button></div></div>` : ""}
+      <details class="why" ${a.steps?.length ? "" : "open"}><summary>Show why — causes, what not to repeat, expert tip</summary>
+        ${a.likely_causes?.length ? `<h3>Likely causes</h3><ul>${a.likely_causes.map((c) => `<li><b data-tr>${esc(c.cause)}</b> <span class="badge ${c.confidence === "high" ? "b-verified" : c.confidence === "medium" ? "b-tested" : "b-self"}">${esc(c.confidence)}</span>${refs(c.memory_refs)}<div class="small muted" data-tr>${esc(c.why)}</div></li>`).join("")}</ul>` : ""}
+        ${a.avoid?.length ? `<h3>Don't repeat</h3><ul class="avoid">${a.avoid.map((x) => `<li><span data-tr>${esc(x.action)}</span>${refs(x.memory_refs)}<div class="small muted" data-tr>${esc(x.why)}</div></li>`).join("")}</ul>` : ""}
+        ${a.expert_tip ? `<div class="tipbox" style="margin-top:12px">💡 <b>Expert tip:</b> <span data-tr>${esc(a.expert_tip)}</span></div>` : ""}
+        ${!a.likely_causes?.length && !a.avoid?.length && !a.expert_tip ? '<p class="small muted">Nothing more to show.</p>' : ""}
+      </details>
+      <p class="small muted" style="margin-top:10px">${a.estimated_time ? `⏱ ${esc(a.estimated_time)} · ` : ""}${a.safety ? `🦺 <span data-tr>${esc(a.safety)}</span>` : ""}</p>
+      <div class="row no-print" style="margin-top:6px">${S.status?.sarvam ? '<button class="btn sm accent" id="btn-listen">🔊 Listen</button>' : ""}<span class="small muted">Translate:</span>
+        <button class="btn sm" data-tl="hi">हिन्दी</button><button class="btn sm" data-tl="kn">ಕನ್ನಡ</button><button class="btn sm" data-tl="en">English</button>
+        <span class="tiny muted" style="margin-left:auto">Written by ${esc(res.written_by)} · memory: ${esc(res.memory_mode)}</span></div>
     </div>
-    <div><div class="panel-head" style="margin-bottom:8px"><h3 style="margin:0">What I remember</h3><span class="small muted">${res.memories.length} memories</span></div>
-      <div id="mems">${res.memories.length ? res.memories.map(memCard).join("") : `<div class="card small muted">${res.use_memory ? "Nothing similar in memory yet." : "Memory is OFF — this is what a generic chatbot knows."}</div>`}</div></div>
+    <div><div class="panel-head" style="margin-bottom:8px"><h3 style="margin:0">What I used from memory</h3><span class="small muted">${used.length} used${other.length ? ` · ${other.length} more searched` : ""}</span></div>
+      <div id="mems">${used.length ? used.map(memCard).join("") : `<div class="card small muted">${res.use_memory ? "No memory matched this exact problem — the advice is general. When you fix it, tap Worked so the next person gets your fix." : "Memory is OFF — this is what a generic chatbot knows."}</div>`}
+      ${other.length ? `<details class="also"><summary>Also searched — not about this problem (${other.length})</summary>${other.map(memCard).join("")}</details>` : ""}</div></div>
   </div>`;
   if (window.innerWidth < 900) $("#ans-grid").style.gridTemplateColumns = "1fr";
-  $$(".ref", out).forEach((r) => (r.onclick = () => { const m = $(`#mems [data-ref="${r.dataset.ref}"]`); if (m) { $$("#mems .mem").forEach((x) => x.classList.remove("hl")); m.classList.add("hl"); m.scrollIntoView({ behavior: "smooth", block: "center" }); } }));
+  $$(".ref", out).forEach((r) => (r.onclick = () => { const m = $(`#mems [data-ref="${r.dataset.ref}"]`); if (m) { const d = m.closest("details"); if (d) d.open = true; $$("#mems .mem").forEach((x) => x.classList.remove("hl")); m.classList.add("hl"); m.scrollIntoView({ behavior: "smooth", block: "center" }); } }));
   bindMemButtons(out);
-  $$("[data-tl]", out).forEach((b) => (b.onclick = () => translateBlock(out, b.dataset.tl, b)));
+  $$("[data-tl]", out).forEach((b) => (b.onclick = () => { out.dataset.lang = b.dataset.tl; const w = $("details.why", out); if (w && b.dataset.tl !== "en") w.open = true; translateBlock(out, b.dataset.tl, b); }));
+  const lb = $("#btn-listen");
+  if (lb) lb.onclick = async () => {
+    const parts2 = $$("[data-tr]", out).slice(0, 8).map((n) => n.textContent);
+    const lang = out.dataset.lang || (S.lang === "hinglish" ? "hi" : S.lang);
+    lb.disabled = true; lb.innerHTML = spin;
+    try { const r = await api("/api/speak", { json: { text: parts2.join(". "), language: lang } });
+      const au = new Audio(`data:${r.mime};base64,${r.audio}`); au.play(); }
+    catch (e) { toast(esc(e.message), "alert"); }
+    lb.disabled = false; lb.textContent = "🔊 Listen";
+  };
   const gb = $("#btn-guided");
   if (gb) gb.onclick = () => {
     const g = $("#guided"); g.classList.remove("hidden"); $("#steps").classList.add("hidden"); gb.classList.add("hidden");
-    g.innerHTML = a.steps.map((s, i) => `<li><input type="checkbox" data-i="${i + 1}"><span>${esc(s)}</span></li>`).join("");
+    g.innerHTML = a.steps.map((s2, i) => `<li><input type="checkbox" data-i="${i + 1}"><span>${esc(s2)}</span></li>`).join("");
     $$("input", g).forEach((c) => (c.onchange = () => { c.parentElement.classList.toggle("done", c.checked);
       if ($$("input", g).every((x) => x.checked)) { toast("All steps done — tell Ustaad if it worked 👇"); $("#fb").scrollIntoView({ behavior: "smooth" }); } }));
   };
   const send = async (result) => {
     const steps = $$("#guided input:checked").map((c) => +c.dataset.i);
     try {
-      const r = await api(`/api/i/${S.ind}/feedback`, { json: { ask_id: res.ask_id, result, person_id: $("#fb-who").value, downtime_minutes: +$("#fb-min").value || 0, action_done: $("#fb-note").value, steps_done: steps } });
-      $("#fb").innerHTML = `<b>${result === "fixed" ? "✔ Saved as WORKED" : "✖ Saved as DID NOT WORK"}</b><p class="small">${esc(r.message)}</p><p class="tiny muted">Saved to: ${esc(r.saved_to)}</p>`;
+      const r = await api(`/api/i/${S.ind}/feedback`, { json: { ask_id: res.ask_id, result, person_id: $("#fb-who").value, downtime_minutes: +$("#fb-min").value || 0, action_done: $("#fb-note").value, steps_done: steps, asset_id: $("#fb-asset")?.value } });
+      const ex = r.expert;
+      $("#fb").innerHTML = `<b>${result === "fixed" ? "✔ Saved as WORKED" : "✖ Saved as DID NOT WORK"}</b><p class="small">${esc(r.message)}</p><p class="tiny muted">Saved to: ${esc(r.saved_to)}</p>
+        ${ex ? `<div class="expertbox">📞 <b>Ask the expert:</b> ${esc(ex.name)} (${esc(ex.role)}) has fixed ${esc(ex.about)} ${ex.fixes} time(s).${ex.failed_times >= 2 ? ` This has now failed ${ex.failed_times} times — time to call.` : ""}
+          <div class="row" style="margin-top:8px"><a class="btn ok sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(ex.message)}">💬 Send on WhatsApp</a>
+          <span class="tiny muted">Opens WhatsApp with the message ready — you choose ${esc(ex.name.split(" ")[0])} from your contacts.</span></div></div>` : ""}`;
       guideHook("feedback", r);
     } catch (e) { toast(esc(e.message), "alert"); }
   };
   if ($("#fb-ok")) { $("#fb-ok").onclick = () => send("fixed"); $("#fb-no").onclick = () => send("failed_again"); }
 }
+function guessAsset(res) {  // the worker's own site first, then the best match, then the first item
+  const me = pack().people.find((p) => p.id === S.person) || {};
+  const real = res.memories.filter((m) => m.asset_id && m.asset_id !== "ALL" && pack().assets.find((a) => a.id === m.asset_id));
+  const mine = real.find((m) => (pack().assets.find((a) => a.id === m.asset_id) || {}).site === me.site);
+  return (mine || real[0] || {}).asset_id || pack().assets[0].id;
+}
 function memCard(m) {
   const tier = m.trust || { tier: m.kind === "public" ? "public" : "tested" };
-  return `<div class="mem" data-ref="${esc(m.ref)}" data-key="${esc(m.key)}">
+  return `<div class="mem ${m.kind === "insight" ? "insight" : ""}" data-ref="${esc(m.ref)}" data-key="${esc(m.key)}">
     <div class="top">${m.ref ? `<span class="ref">${esc(m.ref)}</span>` : ""}${tierBadge(tier)}
       ${m.kind === "tip" ? '<span class="badge b-src">💡 Expert tip</span>' : ""}
       ${m.cross_site ? `<span class="badge b-site">🌐 Learned at ${esc(m.site)}</span>` : m.site ? `<span class="badge b-src">📍 ${esc(m.site)}</span>` : ""}
-      ${m.source ? `<span class="badge b-src" title="Source">📚 ${esc(m.source.slice(0, 48))}</span>` : ""}
+      ${m.other_asset ? `<span class="badge b-unreviewed">↪ Found on ${esc(m.other_asset)}</span>` : ""}
+      ${m.source && !/^public record$/i.test(m.source) ? `<span class="badge b-src" title="Source">📚 ${esc(m.source.slice(0, 48))}</span>` : ""}
       ${m.flagged ? '<span class="badge b-failed">Flagged</span>' : ""}</div>
-    <div class="who">${esc(m.problem || "")}</div>
-    <div class="small">${esc((m.action || "").slice(0, 260))}</div>
+    <div class="who">${esc(m.problem || (m.fact || m.text || "").slice(0, 80))}</div>
+    ${m.kind === "insight" ? `<div class="tiny muted">${m.trust?.tier === "hfact" ? "Saved in Hindsight earlier." : "Hindsight noticed this pattern across many memories by itself."}</div>` : `<div class="small">${esc((m.action || "").slice(0, 260))}</div>`}
     <div class="tiny muted">${esc(m.person || "")}${m.date ? " · " + fmtDate(m.date) : ""}${m.asset_id && m.asset_id !== "ALL" ? " · " + esc(m.asset_id) : ""}${m.origin ? " · from " + esc(m.origin) : ""}</div>
     <details><summary>Show source text</summary><p class="small">${esc(m.text)}</p>${m.url ? `<a class="small" href="${esc(m.url)}" target="_blank" rel="noopener">Open public source ↗</a>` : ""}
       <div class="row" style="margin-top:6px"><button class="btn sm" data-flag="${esc(m.key)}" data-un="${m.flagged ? 1 : 0}">${m.flagged ? "Restore" : "⚑ Flag as wrong"}</button></div></details>
@@ -346,7 +452,7 @@ VIEWS.log = async (el) => {
     try { const r = await api(`/api/i/${S.ind}/smart-log`, { json: { text: $("#l-text").value, person_id: S.person } }); const x = r.extracted || {};
       $("#l-out").innerHTML = `<div class="card" style="background:#fbf8f3"><b>✔ ${esc(r.message)}</b>
         <table class="t" style="margin-top:8px"><tr><td class="muted">${esc(L().asset)}</td><td><b>${esc(x.asset_id)}</b></td></tr><tr><td class="muted">${esc(L().problem)}</td><td>${esc(x.problem)}</td></tr>
-        <tr><td class="muted">Cause</td><td>${esc(x.cause || "—")}</td></tr><tr><td class="muted">Action</td><td>${esc(x.action || "—")}</td></tr><tr><td class="muted">Result</td><td>${esc(x.outcome)}</td></tr>
+        <tr><td class="muted">Cause</td><td>${esc(x.cause || "—")}</td></tr><tr><td class="muted">Action</td><td>${esc(x.action || "—")}</td></tr><tr><td class="muted">Result</td><td>${esc(OUTCOME[x.outcome] || x.outcome)}</td></tr>
         ${x.code ? `<tr><td class="muted">${esc(L().code)}</td><td class="mono">${esc(x.code)}</td></tr>` : ""}</table><p class="tiny muted">Saved to: ${esc(r.saved_to)}</p></div>`;
       guideHook("logged", r);
     } catch (e) { $("#l-out").innerHTML = `<span class="small" style="color:var(--bad)">${esc(e.message)}</span>`; }
@@ -365,7 +471,7 @@ VIEWS.log = async (el) => {
 VIEWS.memory = async (el) => {
   el.innerHTML = `<div class="panel-head"><div><h2>Memory</h2><p class="muted small">Everything Ustaad knows here, with how much to trust it.</p></div></div>
   <div class="card row"><input id="m-q" class="field" placeholder="Search…" style="flex:1;min-width:160px">
-    <select id="m-kind" class="field" style="max-width:170px"><option value="">All kinds</option><option value="record">Team records</option><option value="tip">Expert tips</option><option value="public">Public records</option></select>
+    <select id="m-kind" class="field" style="max-width:170px"><option value="">All kinds</option><option value="record">Team records</option><option value="tip">Expert tips</option><option value="manual">Maker's manual</option><option value="public">Public records</option></select>
     <select id="m-tier" class="field" style="max-width:170px"><option value="">All trust levels</option>${Object.keys(TIER).slice(0, 5).map((k) => `<option value="${k}">${TIER[k][1]}</option>`).join("")}</select>
     <select id="m-asset" class="field" style="max-width:220px"><option value="">All ${esc(L().assets.toLowerCase())}</option>${pack().assets.map((a) => `<option value="${a.id}">${esc(a.id)}</option>`).join("")}</select></div>
   <div id="m-sum" class="small muted" style="margin:10px 2px"></div><div id="m-list">${spin}</div>`;
@@ -388,7 +494,7 @@ VIEWS.approvals = async (el) => {
   ${r.can_approve ? "" : '<div class="card small">Only a senior role can approve.</div>'}
   <div class="stack">${d.pending.map((x) => `<div class="card" data-k="${x.id}"><div class="row"><span class="badge b-unreviewed">Unreviewed</span><span class="badge b-src">${x.kind === "tip" ? "💡 Tip" : "📝 Record"}</span>
     <b>${esc(x.asset_id)}</b><span class="small muted">${esc(personName(x.person_id))} · ${fmtDate(x.datetime || x.date)}</span></div>
-    <p style="margin:8px 0">${x.kind === "tip" ? esc(x.text) : `<b>${esc(x.problem)}</b> — ${esc(x.symptom)}<br><span class="small">Did: ${esc(x.action)} · Result: ${esc(x.outcome)}</span>`}</p>
+    <p style="margin:8px 0">${x.kind === "tip" ? esc(x.text) : `<b>${esc(x.problem)}</b> — ${esc(x.symptom)}<br><span class="small">Did: ${esc(x.action)} · Result: ${esc(OUTCOME[x.outcome] || x.outcome)}</span>`}</p>
     ${r.can_approve ? `<div class="row"><button class="btn ok sm" data-ok="1">Approve</button><button class="btn bad sm" data-ok="0">Reject</button></div>` : ""}</div>`).join("") || '<div class="card empty">Nothing waiting. 🎉</div>'}</div>`;
   $$("[data-ok]", el).forEach((b) => (b.onclick = async () => {
     const card = b.closest("[data-k]");
@@ -472,8 +578,9 @@ VIEWS.shift = async (el) => {
   const load = async () => {
     const d = await api(`/api/i/${S.ind}/shift-report?hours=${$("#sh-h").value}&language=${S.lang}`);
     $("#sh-out").innerHTML = `<div class="card">${d.note ? `<p class="small muted">${esc(d.note)}</p>` : ""}<div style="white-space:pre-wrap;font-size:15px">${esc(d.summary)}</div></div>
+    ${d.parts_out?.length ? `<div class="card" style="margin-top:14px"><h3>📦 Out of stock</h3><div class="row">${d.parts_out.map((x) => `<a class="badge b-failed" href="#/i/${S.ind}/${S.role}/machines/${x.asset_id}">${esc(x.part)} · ${esc(x.asset_id)}</a>`).join("")}</div></div>` : ""}
     ${d.events?.length ? `<div class="card scroll" style="margin-top:14px"><table class="t"><tr><th>Time</th><th>${esc(L().asset)}</th><th>${esc(L().problem)}</th><th>Result</th><th>By</th><th>Min</th></tr>
-      ${d.events.map((e) => `<tr><td class="small">${esc(e.time)}</td><td><b>${esc(e.asset_id)}</b></td><td>${esc(e.problem)}</td><td>${e.outcome === "fixed" ? '<span class="badge b-verified">Worked</span>' : `<span class="badge b-failed">${esc(e.outcome)}</span>`}${e.status === "pending" ? ' <span class="badge b-unreviewed">Unreviewed</span>' : ""}</td><td>${esc(e.person)}</td><td>${Math.round(e.downtime_minutes || 0)}</td></tr>`).join("")}</table></div>` : ""}`;
+      ${d.events.map((e) => `<tr><td class="small">${esc(e.time)}</td><td><b>${esc(e.asset_id)}</b></td><td>${esc(e.problem)}</td><td>${e.outcome === "fixed" ? '<span class="badge b-verified">Worked</span>' : `<span class="badge b-failed">${esc(OUTCOME[e.outcome] || e.outcome)}</span>`}${e.status === "pending" ? ' <span class="badge b-unreviewed">Unreviewed</span>' : ""}</td><td>${esc(e.person)}</td><td>${Math.round(e.downtime_minutes || 0)}</td></tr>`).join("")}</table></div>` : ""}`;
   };
   $("#sh-h").onchange = load; await load();
 };
@@ -518,12 +625,19 @@ async function renderPassportPage(ind, pid) {
 VIEWS.stats = async (el) => {
   const [d, rep, cs] = await Promise.all([api(`/api/i/${S.ind}/stats`), api(`/api/i/${S.ind}/repeat`), api(`/api/i/${S.ind}/cross-site`)]);
   const b = d.before, a = d.after; const pct = (x, y) => (x ? Math.round(100 * (x - y) / x) : 0);
-  el.innerHTML = `<div class="panel-head"><div><h2>Impact & ₹</h2><p class="muted small">Before vs after Ustaad started (${fmtDate(d.ustaad_started)}).</p></div></div>
+  const roi = d.roi || {};
+  el.innerHTML = `<div class="panel-head"><div><h2>ROI dashboard</h2><p class="muted small">What Ustaad changed since it started (${fmtDate(d.ustaad_started)}).</p></div></div>
+  <div class="grid g4 roi-tiles">
+    <div class="kpi big"><span class="small muted">Downtime hours saved</span><b>${roi.hours_saved ?? 0} h</b><span class="tiny muted">faster fixes × problems since start</span></div>
+    <div class="kpi big"><span class="small muted">Repeat failures avoided</span><b>${roi.repeat_failures_avoided ?? 0}</b><span class="tiny muted">failed fixes not repeated</span></div>
+    <div class="kpi big"><span class="small muted">Fixed vs failed</span><b>${roi.fixed_rate ?? 0}% worked</b><span class="tiny muted">${roi.fixed ?? 0} worked · ${roi.failed ?? 0} didn't</span></div>
+    <div class="kpi big" style="background:var(--ink);color:#fff"><span class="small" style="opacity:.8">₹ saved</span><b style="color:var(--accent)">${rupees(d.money_saved)}</b><span class="tiny" style="opacity:.75">lower cost per problem × problems since start</span></div></div>
+  <h3 style="margin-top:18px">Before vs after</h3>
   <div class="grid g4">
     <div class="kpi"><span class="small muted">Avg time to fix</span><b>${b.mttr_minutes} → ${a.mttr_minutes} min</b><span class="delta">↓ ${pct(b.mttr_minutes, a.mttr_minutes)}%</span></div>
     <div class="kpi"><span class="small muted">Fixes that failed</span><b>${b.failed_fix_rate}% → ${a.failed_fix_rate}%</b><span class="delta">↓ ${b.failed_fix_rate - a.failed_fix_rate} pts</span></div>
     <div class="kpi"><span class="small muted">Avg cost per problem</span><b>${rupees(b.avg_cost)} → ${rupees(a.avg_cost)}</b><span class="delta">↓ ${pct(b.avg_cost, a.avg_cost)}%</span></div>
-    <div class="kpi" style="background:var(--ink);color:#fff"><span class="small" style="opacity:.8">Saved since Ustaad started</span><b style="color:var(--accent)">${rupees(d.money_saved)}</b><span class="tiny" style="opacity:.75">${a.incidents} problems × lower cost each</span></div></div>
+    <div class="kpi"><span class="small muted">Problems handled since start</span><b>${a.incidents}</b><span class="tiny muted">${d.records} records · ${d.tips} expert tips in memory</span></div></div>
   <div class="card" style="margin-top:14px"><h3>Month by month</h3><div id="st-c"></div></div>
   <div class="grid g2" style="margin-top:14px">
     <div class="card"><h3>🔁 Repeat problems</h3>${rep.repeat.map((r) => `<div style="padding:6px 0;border-bottom:1px solid #f1ece3"><b>${esc(r.asset_id)}</b> · ${esc(r.problem)} <span class="badge b-src">${r.times}×</span>
@@ -531,6 +645,40 @@ VIEWS.stats = async (el) => {
     <div class="card"><h3>🌐 Cross-site learning</h3>${cs.links.map((l) => `<div style="padding:6px 0;border-bottom:1px solid #f1ece3"><b>${esc(l.asset_id)}</b> <span class="small muted">(${esc(l.site)}, model ${esc(l.model)})</span>
       <div class="small">learns from: ${l.learns_from.map((x) => `${esc(x.problem)} — ${esc(x.person)}, ${esc(x.site)}`).join("; ")}</div></div>`).join("") || '<p class="small muted">Only one site.</p>'}</div></div>`;
   MC.combo($("#st-c"), { labels: d.monthly.map((m) => m.month), bars: d.monthly.map((m) => m.incidents), line: d.monthly.map((m) => m.mttr_minutes), barLabel: "Problems", lineLabel: "Avg minutes to fix" });
+};
+
+// ---------- knowledge coverage map ----------
+VIEWS.coverage = async (el) => {
+  const d = await api(`/api/i/${S.ind}/coverage`); const sm = d.summary; const sites = Object.fromEntries((pack().sites || []).map((x) => [x.id, x.name]));
+  const col = { good: "var(--ok)", ok: "var(--warn)", low: "var(--bad)" };
+  el.innerHTML = `<div class="panel-head"><div><h2>Knowledge coverage</h2><p class="muted small">Score out of 100: proven fixes for its problems, written-down tips, how many people can fix it, and its manual. Weakest first.</p></div></div>
+  <div class="grid g4">
+    <div class="kpi big"><span class="small muted">Average coverage</span><b>${sm.average}/100</b></div>
+    <div class="kpi big"><span class="small muted">Only one person knows it</span><b style="color:var(--bad)">${sm.single_expert}</b><span class="tiny muted">of ${sm.machines} ${esc(L().assets.toLowerCase())}</span></div>
+    <div class="kpi big"><span class="small muted">No maker's manual</span><b>${sm.no_manual}</b></div>
+    <div class="kpi"><span class="small muted">What to do</span><span class="small">Run the exit interview for every 🚩 expert; add manuals in My ${esc(L().assets.toLowerCase())}.</span></div></div>
+  <div class="grid g3" style="margin-top:14px">${d.machines.map((m) => `
+    <a class="card mcard" href="#/i/${S.ind}/${S.role}/machines/${encodeURIComponent(m.asset_id)}" style="border-top:4px solid ${col[m.level]}">
+      <div class="row" style="justify-content:space-between"><b class="mono">${esc(m.asset_id)}</b><b style="font-size:22px;color:${col[m.level]}">${m.score}<span class="tiny muted">/100</span></b></div>
+      <div class="small">${esc(nm({ id: m.asset_id, name: m.asset }))}</div><div class="tiny muted">${esc(sites[m.site] || "")}</div>
+      <div class="bar" style="height:6px;background:#eee;border-radius:4px;margin:8px 0"><div style="height:6px;border-radius:4px;width:${m.score}%;background:${col[m.level]}"></div></div>
+      <div class="tiny">${m.proven}/${m.problem_types} problem types with a proven fix · ${m.written_down} written down · ${m.experts.length} expert(s)${m.manual_facts ? " · 📘 manual" : ""}</div>
+      ${m.flags.length ? `<div style="margin-top:6px">${m.flags.map((f) => `<div class="tiny" style="color:var(--bad)">🚩 ${esc(f)}</div>`).join("")}</div>` : '<div class="tiny" style="color:var(--ok);margin-top:6px">✔ Well covered</div>'}
+    </a>`).join("")}</div>`;
+};
+
+// ---------- expert leaderboard ----------
+VIEWS.leaderboard = async (el) => {
+  const d = await api(`/api/i/${S.ind}/leaderboard`); const medal = ["🥇", "🥈", "🥉"];
+  el.innerHTML = `<div class="panel-head"><div><h2>Expert leaderboard</h2><p class="muted small">${esc(d.how)}</p></div></div>
+  <div class="grid g3">${d.people.slice(0, 3).map((p, i) => `<div class="card" style="text-align:center"><div style="font-size:34px">${medal[i]}</div><h3 style="margin:4px 0">${esc(p.name)}</h3>
+    <div class="tiny muted">${esc(p.role)}</div><div style="font-size:24px;font-weight:800;margin:6px 0">${p.points} pts</div>
+    <div class="row" style="justify-content:center;gap:4px">${p.badges.map((b) => `<span class="badge b-verified">${esc(b)}</span>`).join("")}</div></div>`).join("")}</div>
+  <div class="card" style="margin-top:14px;overflow-x:auto"><table class="t"><tr><th>#</th><th>Person</th><th>Fixes that worked</th><th>Success rate</th><th>Reused by others</th><th>Hours saved for others</th><th>Tips</th><th>Points</th></tr>
+  ${d.people.map((p) => `<tr><td><b>${p.rank <= 3 ? medal[p.rank - 1] : p.rank}</b></td>
+    <td><a href="#/passport/${S.ind}/${p.person_id}"><b>${esc(p.name)}</b></a> <span class="tiny muted">${esc(p.role)}</span>${p.leaving ? ` <span class="badge b-high">Leaving ${fmtDate(p.leaving)}</span>` : ""}
+      <div>${p.badges.map((b) => `<span class="badge b-src">${esc(b)}</span>`).join(" ")}</div></td>
+    <td>${p.worked}</td><td>${p.success_rate == null ? "—" : p.success_rate + "%"}</td><td>${p.reused_by_others}</td><td>${p.hours_saved_for_others} h</td><td>${p.tips}</td><td><b>${p.points}</b></td></tr>`).join("")}</table></div>`;
 };
 
 // ---------- quiz ----------
@@ -641,7 +789,11 @@ VIEWS.sensors = async (el) => {
     const asset = pack().assets.find((x) => x.id === a);
     $("#sn-alert").innerHTML = `<div class="card" style="margin-top:14px;border-left:5px solid var(--bad)"><h3>⚠️ ${a} needs attention</h3>
       <p>Vibration <b>${p.vib} mm/s</b> and temperature <b>${p.temp} °C</b> — above this machine's normal. ${asset ? esc(asset.name) : ""}</p>
-      <button class="btn accent" id="sn-ask">💬 Ask Ustaad what fixed this before</button></div>`;
+      <p class="small" id="sn-log">${spin} Writing the log by itself…</p>
+      <div class="row"><button class="btn accent" id="sn-ask">💬 Ask Ustaad what fixed this before</button><a class="btn sm" href="#/i/${S.ind}/${S.role}/machines/${a}">🏭 Open ${a}'s page</a></div></div>`;
+    api(`/api/i/${S.ind}/sensors/alert`, { json: { asset_id: a, reading: { vib: p.vib, temp: p.temp, time: labels[i] } } })
+      .then((r) => { const el2 = $("#sn-log"); if (el2) el2.innerHTML = `📝 <b>${esc(r.message)}</b> When the technician taps <i>Worked</i>, this log is finished automatically.`; })
+      .catch((e) => { const el2 = $("#sn-log"); if (el2) el2.textContent = e.message; });
     $("#sn-ask").onclick = () => { S.prefill = { asset_id: a, problem: `${a} spindle vibration rising to ${p.vib} mm/s and temperature ${p.temp} °C`, auto: true }; go(`#/i/${S.ind}/${S.role}/ask`); };
     guideHook("alert");
   };
@@ -686,7 +838,149 @@ VIEWS.check = async (el) => {
   $$("#tool input, #tool select").forEach((x) => (x.oninput = run)); run();
 };
 
-// ---------- demo guide (5 stories) ----------
+// ---------- My machines ----------
+const HEALTH = { green: ["🟢", "Healthy"], amber: ["🟠", "Needs attention"], red: ["🔴", "Problem now"] };
+VIEWS.machines = async (el, sub) => {
+  if (sub) return machineProfile(el, decodeURIComponent(sub));
+  const d = await api(`/api/i/${S.ind}/machines`); const canEdit = roleObj().can_approve; const p = pack();
+  const bySite = {}; d.machines.forEach((m) => (bySite[m.site] = bySite[m.site] || []).push(m));
+  el.innerHTML = `<div class="panel-head"><div><h2>My ${esc(L().assets.toLowerCase())}</h2><p class="muted small">Tap one to see everything about it.</p></div>
+    ${canEdit ? `<button class="btn accent" id="mc-add">＋ Add ${esc(L().asset.toLowerCase())}</button>` : '<span class="small muted">Seniors can add new ones.</span>'}</div>
+    <div id="mc-form"></div>
+    ${p.sites.map((st) => (bySite[st.id] || []).length ? `<h3 style="margin-top:14px">📍 ${esc(st.name)}</h3><div class="grid g3">${bySite[st.id].map((m) => `
+      <a class="card mcard" href="#/i/${S.ind}/${S.role}/machines/${encodeURIComponent(m.id)}">
+        <div class="row" style="justify-content:space-between"><b class="mono" style="font-size:15px">${esc(m.id)}</b><span title="${esc(m.health.reasons.join(" · "))}">${HEALTH[m.health.level][0]} <span class="small">${HEALTH[m.health.level][1]}</span></span></div>
+        <div>${esc(nm(m))}${m.custom ? ' <span class="badge b-tested">New</span>' : ""}</div><div class="tiny muted">${esc([m.maker, m.model].filter(Boolean).join(" · "))}</div>
+        <div class="row" style="gap:6px;margin-top:6px"><span class="badge b-src">${m.fixed}/${m.problems} fixed</span>${m.due_soon ? `<span class="badge b-unreviewed">🔧 ${m.due_soon} due</span>` : ""}${m.parts_low ? `<span class="badge b-failed">📦 ${m.parts_low} low</span>` : ""}${m.manual ? `<span class="badge b-manual">📘 manual</span>` : ""}</div></a>`).join("")}</div>` : "").join("")}`;
+  if ($("#mc-add")) $("#mc-add").onclick = () => machineForm($("#mc-form"));
+};
+
+function machineForm(box, existing) {
+  const p = pack(); const e = existing || {};
+  const lines = (arr, f) => (arr || []).map(f).join("\n");
+  box.innerHTML = `<div class="card stack" style="margin-bottom:16px;border-top:4px solid var(--accent)">
+    <h3>${existing ? "Edit " + esc(e.id) : "Add a new " + esc(L().asset.toLowerCase())}</h3>
+    ${existing ? "" : `<div><b>1 · Let Ustaad fill the form</b> <span class="small muted">— or skip and type it yourself</span>
+      <div class="grid g3" style="margin-top:8px">
+        <label class="card src"><b>📄 PDF manual</b><span class="tiny muted">The maker's manual. Ustaad picks the useful pages.</span><input type="file" id="mf-pdf" accept="application/pdf"></label>
+        <div class="card src"><b>🌐 Maker's web page</b><span class="tiny muted">Paste the product page link.</span><div class="row" style="flex-wrap:nowrap"><input class="field" id="mf-url" placeholder="https://…"><button class="btn sm" id="mf-url-go">Read</button></div></div>
+        <label class="card src"><b>📷 Nameplate photo</b><span class="tiny muted">Snap the metal label on the machine.</span><input type="file" id="mf-photo" accept="image/*" capture="environment"></label>
+      </div><div id="mf-status" class="small" style="margin-top:6px"></div></div>
+    <b>2 · Check and save</b>`}
+    <div class="grid g3">
+      <div><label class="f">ID (short)</label><input class="field mono" id="mf-id" value="${esc(e.id || "")}" ${existing ? "disabled" : ""} placeholder="e.g. CNC-4"></div>
+      <div><label class="f">Name</label><input class="field" id="mf-name" value="${esc(e.name || "")}"></div>
+      <div><label class="f">Site</label><select class="field" id="mf-site">${p.sites.map((st) => `<option value="${st.id}" ${st.id === e.site ? "selected" : ""}>${esc(st.name)}</option>`).join("")}</select></div>
+      <div><label class="f">Maker</label><input class="field" id="mf-maker" value="${esc(e.maker || "")}"></div>
+      <div><label class="f">Model</label><input class="field" id="mf-model" value="${esc(e.model || "")}"></div>
+      <div><label class="f">Type</label><input class="field" id="mf-type" value="${esc(e.type || "")}"></div>
+      <div><label class="f">Installed on</label><input class="field" type="date" id="mf-install" value="${esc(e.install_date || "")}"></div>
+      <div><label class="f">Warranty until</label><input class="field" type="date" id="mf-warranty" value="${esc(e.warranty_until || "")}"></div>
+      <div><label class="f">Service vendor</label><input class="field" id="mf-vendor" value="${esc(e.vendor || "")}" placeholder="Name"></div>
+    </div>
+    <div class="grid g2">
+      <div><label class="f">Specs <span class="muted small">— one per line: label: value</span></label><textarea class="field mono" id="mf-specs" style="min-height:120px">${esc(lines(e.specs, (x) => `${x.label}: ${x.value}`))}</textarea></div>
+      <div><label class="f">Parts <span class="muted small">— name | part no | replace every N days | in store</span></label><textarea class="field mono" id="mf-parts" style="min-height:120px">${esc(lines(e.components, (c) => `${c.name} | ${c.part_no || ""} | ${c.every_days || ""} | ${c.stock ?? ""}`))}</textarea></div>
+    </div>
+    <div id="mf-extra"></div>
+    <div class="row"><button class="btn accent" id="mf-save">Save ${existing ? "changes" : ""}</button><button class="btn ghost" id="mf-cancel">Cancel</button><span id="mf-out" class="small"></span></div></div>`;
+  let draft = { faults: [], service: [], source_ref: "", summary: e.summary || "" };
+  const fill = (d) => {
+    draft = d; const set = (id, v) => { if (v && !$(id).value) $(id).value = v; };
+    set("#mf-name", d.name); set("#mf-maker", d.maker); set("#mf-model", d.model); set("#mf-type", d.type);
+    if (!$("#mf-id").value && d.name) $("#mf-id").value = (L().asset.slice(0, 3) + "-" + Math.floor(Math.random() * 90 + 10)).toUpperCase().replace(/[^A-Z0-9-]/g, "");
+    if (d.specs?.length) $("#mf-specs").value = d.specs.map((x) => `${x.label}: ${x.value}`).join("\n");
+    if (d.components?.length) $("#mf-parts").value = d.components.map((c) => `${c.name} | ${c.part_no || ""} | ${c.every_days || ""} | `).join("\n");
+    if (d.warranty_months && $("#mf-install").value === "") $("#mf-extra").dataset.wm = d.warranty_months;
+    $("#mf-extra").innerHTML = `<div class="card" style="background:#f7f5ff"><b>📘 From the manual — saved into memory when you save:</b>
+      ${d.summary ? `<p class="small">${esc(d.summary)}</p>` : ""}
+      ${d.faults?.length ? `<div class="small"><b>${d.faults.length} known faults:</b> ${d.faults.map((f) => esc(f.title + (f.code ? ` (${f.code})` : ""))).join(" · ")}</div>` : ""}
+      ${d.service?.length ? `<div class="small" style="margin-top:4px"><b>${d.service.length} service tasks:</b> ${d.service.map((x) => esc(x.task) + (x.every_days ? ` (every ${x.every_days} d)` : "")).join(" · ")}</div>` : ""}
+      ${d.warranty_months ? `<div class="small" style="margin-top:4px"><b>Warranty:</b> ${d.warranty_months} months from install date</div>` : ""}
+      ${d.note ? `<p class="tiny muted">${esc(d.note)}</p>` : ""}<p class="tiny muted">Source: ${esc(d.source_ref)}</p></div>`;
+    $("#mf-status").innerHTML = "✔ Read it. Check the form, give it an ID, then save.";
+  };
+  const read = async (opts, what) => {
+    $("#mf-status").innerHTML = `${spin} Reading the ${what}… (a big manual takes ~20 seconds)`;
+    try { fill(await api(`/api/i/${S.ind}/machines/read`, opts)); } catch (err) { $("#mf-status").innerHTML = `<span style="color:var(--bad)">${esc(err.message)}</span>`; }
+  };
+  const up = (inp, what) => { const f = inp.files[0]; if (!f) return; const fd = new FormData(); fd.append("file", f); read({ method: "POST", body: fd }, what); };
+  if ($("#mf-pdf")) { $("#mf-pdf").onchange = (ev) => up(ev.target, "manual"); $("#mf-photo").onchange = (ev) => up(ev.target, "nameplate");
+    $("#mf-url-go").onclick = () => read({ json: { url: $("#mf-url").value } }, "web page"); }
+  $("#mf-cancel").onclick = () => { box.innerHTML = ""; };
+  $("#mf-save").onclick = async () => {
+    const specs = $("#mf-specs").value.split("\n").map((l) => l.split(/:(.+)/)).filter((x) => x[0]?.trim() && x[1]?.trim()).map((x) => ({ label: x[0].trim(), value: x[1].trim() }));
+    const components = $("#mf-parts").value.split("\n").map((l) => l.split("|").map((x) => x.trim())).filter((x) => x[0])
+      .map((x) => ({ name: x[0], part_no: x[1] || "", every_days: +x[2] || null, stock: x[3] === "" || x[3] === undefined ? null : +x[3] }));
+    const m = { id: existing ? e.id : $("#mf-id").value, is_new: !existing, name: $("#mf-name").value, site: $("#mf-site").value, maker: $("#mf-maker").value,
+      model: $("#mf-model").value, type: $("#mf-type").value, install_date: $("#mf-install").value, warranty_until: $("#mf-warranty").value,
+      warranty_months: draft.warranty_months, vendor: $("#mf-vendor").value, specs, components, faults: draft.faults || [], service: draft.service || [],
+      summary: draft.summary, source_ref: draft.source_ref || e.source_ref || "" };
+    $("#mf-save").disabled = true;
+    try { const r = await api(`/api/i/${S.ind}/machines`, { json: { machine: m, person_id: S.person, role: S.role } });
+      delete S.packs[S.ind]; await loadPack(S.ind); toast(esc(r.message)); guideHook("machine"); go(`#/i/${S.ind}/${S.role}/machines/${encodeURIComponent(r.asset.id)}`); }
+    catch (err) { $("#mf-out").innerHTML = `<span style="color:var(--bad)">${esc(err.message)}</span>`; $("#mf-save").disabled = false; }
+  };
+}
+
+async function machineProfile(el, aid) {
+  const d = await api(`/api/i/${S.ind}/machines/${encodeURIComponent(aid)}`); const a = d.asset; const canEdit = roleObj().can_approve;
+  const qrUrl = `${location.origin}/m/${S.ind}/${encodeURIComponent(a.id)}`;
+  const qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=6&data=${encodeURIComponent(qrUrl)}`;
+  const h = HEALTH[d.health.level];
+  el.innerHTML = `<div class="crumbs no-print"><a href="#/i/${S.ind}/${S.role}/machines">← All ${esc(L().assets.toLowerCase())}</a></div>
+  <div class="card mhead"><div><div class="tiny muted">${esc(d.site)}${a.demo ? ' · <span class="badge b-src">dates & stock are demo data</span>' : ""}</div>
+      <h2 style="margin:2px 0"><span class="mono">${esc(a.id)}</span> · ${esc(nm(a))}</h2>
+      <div class="small muted">${esc([a.maker, a.model && "model " + a.model, a.type].filter(Boolean).join(" · "))}</div>
+      ${a.summary ? `<p class="small" style="margin:6px 0 0">${esc(a.summary)}</p>` : ""}</div>
+    <div class="health ${d.health.level}"><b>${h[0]} ${h[1]}</b><div class="tiny">${d.health.reasons.map(esc).join("<br>")}</div></div></div>
+  <div class="row no-print" style="margin:12px 0"><button class="btn accent" id="mp-ask">💬 Ask about ${esc(a.id)}</button><button class="btn" id="mp-log">✍️ I fixed something</button>${canEdit ? '<button class="btn" id="mp-edit">✏️ Edit details</button>' : ""}</div>
+  <div id="mp-form"></div>
+  <div class="tabs no-print">${["Overview", "History", "Experts", "Manual", "QR sticker"].map((t, i) => `<button data-tab="${i}" class="${i === 0 ? "on" : ""}">${t}</button>`).join("")}</div>
+  <div id="mp-tab"></div>`;
+  const kpi = (b, l) => `<div class="kpi"><b>${b}</b><span class="small muted">${l}</span></div>`;
+  const tabs = [
+    () => `<div class="grid g4">${kpi(d.stats.problems, "problems logged")}${kpi(d.stats.fixed, "fixed")}${kpi(d.stats.hours_lost + " h", "time lost")}${kpi(d.stats.last_problem ? fmtDate(d.stats.last_problem) : "—", "last problem")}</div>
+      ${d.sensor ? `<div class="card" style="margin-top:12px;border-left:5px solid ${d.sensor.state === "confirmed" ? "var(--ok)" : "var(--warn)"}"><b>📡 Sensor</b><p class="small" style="margin:4px 0">${esc(d.sensor.text)}</p><div class="tiny muted">${esc(d.sensor.symptom)}</div></div>` : ""}
+      <div class="grid g2" style="margin-top:12px">
+        <div class="card"><h3>🔧 Service due</h3>${d.service_due.length ? d.service_due.map((x) => `<div class="li"><span class="badge ${x.status === "overdue" ? "b-failed" : x.status === "soon" ? "b-unreviewed" : "b-verified"}">${x.status === "overdue" ? `${-x.days_left} days overdue` : `in ${x.days_left} days`}</span> <b>${esc(x.what)}</b>
+          <div class="tiny muted">Every ${x.every_days} days · ${x.last_done ? `last done ${fmtDate(x.last_done)} (found in repair history)` : x.last_from === "install date" ? "counted from install date" : ""}</div></div>`).join("") : '<p class="small muted">No service intervals yet. Add parts with "replace every N days".</p>'}</div>
+        <div class="card"><h3>📦 Spare parts in store</h3>${d.parts.length ? d.parts.map((c) => `<div class="li row" style="justify-content:space-between"><div><b>${esc(c.name)}</b> <span class="tiny muted mono">${esc(c.part_no || "")}</span>
+            <div class="tiny muted">${c.status === "out" ? "⛔ none left — order now" : c.status === "low" ? "⚠️ low" : c.status === "ok" ? "ok" : "stock not set"}</div></div>
+            <div class="row" style="gap:4px"><button class="btn sm" data-st="${esc(c.name)}" data-d="-1">−</button><b class="mono" style="min-width:22px;text-align:center">${c.stock ?? "?"}</b><button class="btn sm" data-st="${esc(c.name)}" data-d="1">+</button></div></div>`).join("") : '<p class="small muted">No parts listed yet.</p>'}
+          <p class="tiny muted">Repair logs that say a part was replaced take one off automatically.</p></div>
+        <div class="card"><h3>🧾 Warranty & service</h3>${d.warranty ? `<p><span class="badge ${d.warranty.active ? (d.warranty.days_left <= 45 ? "b-unreviewed" : "b-verified") : "b-failed"}">${d.warranty.active ? `Under warranty — ${d.warranty.days_left} days left` : "Warranty ended"}</span> <span class="small">until ${fmtDate(d.warranty.until)}</span></p>` : '<p class="small muted">No warranty date.</p>'}
+          <p class="small">Installed: <b>${a.install_date ? fmtDate(a.install_date) : "—"}</b><br>Service vendor: <b>${esc(a.vendor || "—")}</b></p>
+          ${d.twins.length ? `<p class="small">🌐 Same model: ${d.twins.map((t) => `<a href="#/i/${S.ind}/${S.role}/machines/${t}">${esc(t)}</a>`).join(", ")} — their fixes count here too.</p>` : ""}</div>
+        <div class="card"><h3>📋 Specs</h3>${(a.specs || []).length ? `<table class="t">${a.specs.map((x) => `<tr><td class="muted small">${esc(x.label)}</td><td class="small">${esc(x.value)}</td></tr>`).join("")}</table>` : '<p class="small muted">No specs yet.' + (canEdit ? " Use ✏️ Edit details." : "") + "</p>"}</div>
+      </div>`,
+    () => `<div class="card">${d.history.length ? `<table class="t"><tr><th>Date</th><th>Problem</th><th>What was done</th><th>Result</th><th>By</th></tr>${d.history.map((r) => `<tr><td class="small">${fmtDate(r.date)}</td><td><b>${esc(r.problem)}</b>${r.source === "sensor" ? ' <span class="badge b-site">📡 auto-logged</span>' : ""}</td><td class="small">${esc(r.action)}</td>
+        <td><span class="badge ${r.outcome === "fixed" ? "b-verified" : r.outcome === "open" ? "b-unreviewed" : "b-failed"}">${esc(r.outcome_label)}</span>${r.sensor?.confirmed ? ' <span class="badge b-verified">📡 confirmed</span>' : ""}${r.status === "pending" ? ' <span class="badge b-unreviewed">Unreviewed</span>' : ""}</td><td class="small">${esc(r.person)}</td></tr>`).join("")}</table>` : '<p class="muted">No problems logged yet — memory starts here.</p>'}</div>`,
+    () => `<div class="grid g3">${d.experts.map((x, i) => `<div class="card"><div class="tiny muted">#${i + 1} on this ${esc(L().asset.toLowerCase())}${d.twins.length ? " and its twins" : ""}</div><h3>${esc(x.name)}</h3><div class="small muted">${esc(x.role)}</div>
+        <p><b>${x.fixes}</b> proven fix(es)${x.leaving ? ` · <span class="badge b-high">Leaving ${fmtDate(x.leaving)}</span>` : ""}</p>
+        <div class="row"><a class="btn sm" href="#/passport/${S.ind}/${x.person_id}">🏅 Skill passport</a><a class="btn sm ok" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`${x.name.split(" ")[0]} ji, need your help with ${a.id} (${nm(a)}).`)}">💬 WhatsApp</a></div></div>`).join("") || '<div class="card muted">No proven fixes yet.</div>'}</div>
+      ${d.experts.some((x) => x.leaving) ? '<p class="small" style="margin-top:10px">⚠️ An expert here is leaving — run the <b>Exit interview</b> before they go.</p>' : ""}`,
+    () => `<div class="card">${d.manual.length ? `<p class="small muted">From ${esc(a.source_ref || "the maker's manual")}. These are in Ustaad's memory as "📘 Maker's manual", so answers can compare the manual with what your team found.</p>${d.manual.map((m) => `<div class="li"><span class="badge b-manual">${{ fault: "Known fault", service: "Service", spec: "Specs" }[m.kind] || m.kind}</span> <b>${esc(m.title)}</b><div class="small">${esc(m.text)}</div></div>`).join("")}` : `<p class="muted">No manual added yet.${canEdit ? " Use ＋ Add (or ✏️ Edit details) and upload the maker's PDF manual or web page." : ""}</p>`}</div>`,
+    () => `<div class="card sticker"><div class="qr"><img src="${qrImg}" alt="QR code for ${esc(a.id)}" width="200" height="200"></div>
+        <div><div class="tiny" style="letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700">Ustaad · scan me</div><h2 class="mono" style="margin:4px 0">${esc(a.id)}</h2><div>${esc(nm(a))}</div><div class="small muted">${esc(d.site)}</div>
+        <p class="small">Problem with this ${esc(L().asset.toLowerCase())}? Scan with your phone camera — Ustaad opens with it already chosen.</p><div class="tiny muted mono">${esc(qrUrl)}</div></div></div>
+      <div class="row no-print" style="margin-top:10px"><button class="btn primary" onclick="window.print()">🖨 Print sticker</button><span class="small muted">Like a barcode at a shop — it tells Ustaad which ${esc(L().asset.toLowerCase())} this is.</span></div>`,
+  ];
+  const show = (i) => { $$(".tabs button", el).forEach((b) => b.classList.toggle("on", +b.dataset.tab === i)); $("#mp-tab").innerHTML = tabs[i]();
+    $$("[data-st]", el).forEach((b) => (b.onclick = async () => { const c = d.parts.find((x) => x.name === b.dataset.st); const v = Math.max(0, (+c.stock || 0) + +b.dataset.d);
+      try { await api(`/api/i/${S.ind}/machines/${encodeURIComponent(a.id)}/stock`, { json: { part: c.name, stock: v } }); machineProfile(el, aid); } catch (err) { toast(esc(err.message), "alert"); } })); };
+  $$(".tabs button", el).forEach((b) => (b.onclick = () => show(+b.dataset.tab))); show(S.mpTab || 0); S.mpTab = 0;
+  $("#mp-ask").onclick = () => { S.prefill = { asset_id: a.id }; go(`#/i/${S.ind}/${S.role}/ask`); };
+  $("#mp-log").onclick = () => go(`#/i/${S.ind}/${S.role}/log`);
+  if ($("#mp-edit")) $("#mp-edit").onclick = () => machineForm($("#mp-form"), a);
+  guideHook("profile");
+}
+function openFromQR(ind, aid) {  // the QR sticker: open Ask as a worker with this item already chosen
+  return loadPack(ind).then((p) => { const r = p.roles.find((x) => !x.can_approve && x.tools.includes("ask")) || p.roles[0];
+    S.prefill = { asset_id: aid }; toast(`📷 Scanned ${esc(aid)} — what's the problem?`); location.replace(`#/i/${ind}/${r.id}/ask`); });
+}
+
+// ---------- demo guide (6 stories) ----------
 const STORIES = [
   { title: "1 · New technician's first breakdown", ind: "factory", steps: [
     { t: "You are Arjun, a junior technician. Open <b>Live sensors</b> and press ▶ Play. Watch CNC-3.", go: "#/i/factory/technician/sensors", until: "alert" },
@@ -713,14 +1007,20 @@ const STORIES = [
     { t: "Hospital: ask about a ventilator alarm — Bengaluru's fix reaches Mysuru, plus real FDA reports.", go: "#/i/healthcare/nurse/ask", prefill: { asset_id: "VNT-M1", problem: "High blower temperature alarm on the ventilator at night", auto: true } },
     { t: "Garage: look up <b>P0171</b> — code meaning + Venki-anna's spray test.", go: "#/i/garage/mechanic/obd" },
     { t: "IT on-call: open the <b>Outage library</b> — 240 real public outages next to the team's own incidents.", go: "#/i/it/oncall/outages" },
-    { t: "Try a 📷 photo question in <b>Ask Ustaad</b> (needs the Groq key). That's the tour!", go: "#/i/it/oncall/ask" } ] },
+    { t: "Try a 📷 photo question in <b>Ask Ustaad</b> (needs the Groq key).", go: "#/i/it/oncall/ask" } ] },
+  { title: "6 · A new machine arrives", ind: "factory", steps: [
+    { t: "You are the supervisor. Open <b>My machines</b> and press <b>＋ Add machine</b>.", go: "#/i/factory/supervisor/machines" },
+    { t: "Upload the maker's <b>PDF manual</b> (or paste its web page, or snap the nameplate). Ustaad fills the form: specs, parts, known faults, service tasks. Give it an ID like <b>CNC-4</b> and press <b>Save</b>.", until: "machine" },
+    { t: "This is the machine's page: health light, service due, spare parts, history, experts, manual — and a <b>QR sticker</b> to print and stick on it.", until: "profile" },
+    { t: "Press <b>💬 Ask about CNC-4</b> and ask about an alarm from its manual — the answer comes from the 📘 maker's manual." },
+    { t: "Tap <b>✖ Didn't work</b> or <b>✔ Worked</b> with what you really did. Ask again: now it says <b>Manual says … / team found …</b>. That's the whole idea." } ] },
 ];
 const G = { open: false, s: 0, k: 0 };
 function drawGuide() {
   const g = $("#guide"); if (!G.open) { g.classList.add("hidden"); return; } g.classList.remove("hidden");
   const st = STORIES[G.s], step = st.steps[G.k];
   g.innerHTML = `<div class="row" style="justify-content:space-between"><h3 style="margin:0">Demo guide</h3><button class="btn ghost sm" id="g-x">✕</button></div>
-  <p class="tiny muted">5 short stories cover every feature. Follow the dark box.</p>
+  <p class="tiny muted">6 short stories cover every feature. Follow the dark box.</p>
   ${STORIES.map((s, i) => `<div class="story ${i === G.s ? "on" : ""}" data-s="${i}"><b>${esc(s.title)}</b><div class="tiny muted">${s.steps.length} steps</div></div>`).join("")}
   <div class="stepnow"><div class="tiny" style="opacity:.7">Step ${G.k + 1} of ${st.steps.length}</div><p style="margin:6px 0 10px">${step.t}</p>
     <div class="row">${step.go ? '<button class="btn accent sm" id="g-go">Take me there</button>' : ""}<span style="flex:1"></span>
@@ -744,7 +1044,8 @@ async function route() {
   clearCharts();
   const h = location.hash.replace(/^#\/?/, ""); const parts = h.split("/").filter(Boolean);
   try {
-    if (parts[0] === "i" && parts.length >= 4) await renderWorkspace(parts[1], parts[2], parts[3]);
+    if (parts[0] === "m" && parts[2]) { await openFromQR(parts[1], decodeURIComponent(parts[2])); return; }
+    if (parts[0] === "i" && parts.length >= 4) await renderWorkspace(parts[1], parts[2], parts[3], parts[4]);
     else if (parts[0] === "i" && parts[1]) await renderRoles(parts[1]);
     else if (parts[0] === "passport") await renderPassportPage(parts[1], parts[2]);
     else await renderHome();

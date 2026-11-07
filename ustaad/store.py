@@ -9,7 +9,7 @@ import threading
 import uuid
 from datetime import datetime
 
-from . import config, packs
+from . import backup, config, packs
 
 _lock = threading.Lock()
 
@@ -30,6 +30,10 @@ CREATE TABLE IF NOT EXISTS asks (
 );
 CREATE TABLE IF NOT EXISTS flags (memory_key TEXT PRIMARY KEY, industry TEXT, reason TEXT, flagged_by TEXT, created TEXT);
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
+CREATE TABLE IF NOT EXISTS machines (industry TEXT, id TEXT, data TEXT, created TEXT, created_by TEXT, PRIMARY KEY (industry, id));
+CREATE TABLE IF NOT EXISTS manual_items (
+    id TEXT PRIMARY KEY, industry TEXT, asset_id TEXT, kind TEXT, title TEXT, text TEXT, source_ref TEXT, date TEXT
+);
 """
 
 REC_FIELDS = ["id", "industry", "datetime", "asset_id", "person_id", "problem", "code", "symptom", "cause", "action",
@@ -51,6 +55,18 @@ def init(force=False):
     for ind in packs.ids():
         if force or ind not in loaded:
             load_seed(ind)
+        elif not meta_get(f"demo_machines:{ind}"):
+            _demo_machines(ind)
+    backup.restore()  # bring back what people added before the last restart / deploy
+    for ind in packs.ids():  # custom industries that came back with the saved data
+        if not records(ind) and packs.get(ind).get("records"):
+            load_seed(ind)
+
+
+def _demo_machines(industry):
+    from . import machines  # late import (machines imports store)
+    machines.load_demo(industry)
+    meta_set(f"demo_machines:{industry}", {"loaded": now()})
 
 
 def load_seed(industry):
@@ -66,6 +82,7 @@ def load_seed(industry):
             row = {"status": "approved", "source": "seed", **t, "industry": industry}
             c.execute(f"INSERT OR REPLACE INTO tips ({','.join(TIP_FIELDS)}) VALUES ({','.join('?' * len(TIP_FIELDS))})",
                       [row.get(f) for f in TIP_FIELDS])
+    _demo_machines(industry)
 
 
 # ---------- reads ----------
@@ -149,6 +166,7 @@ def add_record(industry, data):
     with _lock, _conn() as c:
         c.execute(f"INSERT INTO records ({','.join(REC_FIELDS)}) VALUES ({','.join('?' * len(REC_FIELDS))})",
                   [row[f] for f in REC_FIELDS])
+    backup.mark_dirty()
     return row
 
 
@@ -159,6 +177,7 @@ def add_tip(industry, person_id, asset_id, text, source_ref="", status="pending"
     with _lock, _conn() as c:
         c.execute(f"INSERT INTO tips ({','.join(TIP_FIELDS)}) VALUES ({','.join('?' * len(TIP_FIELDS))})",
                   [row[f] for f in TIP_FIELDS])
+    backup.mark_dirty()
     return row
 
 
@@ -167,6 +186,7 @@ def approve(key, approved_by, approve=True):
     with _lock, _conn() as c:
         n = c.execute("UPDATE records SET status=?, approved_by=? WHERE id=?", (status, approved_by, key)).rowcount
         n += c.execute("UPDATE tips SET status=?, approved_by=? WHERE id=?", (status, approved_by, key)).rowcount
+    backup.mark_dirty()
     return n > 0
 
 
@@ -181,8 +201,90 @@ def save_ask(industry, asset_id, problem, use_memory, answer, top_person=None, t
 def add_flag(industry, key, reason, flagged_by):
     with _lock, _conn() as c:
         c.execute("INSERT OR REPLACE INTO flags VALUES (?, ?, ?, ?, ?)", (key, industry, reason, flagged_by, now()))
+    backup.mark_dirty()
 
 
 def remove_flag(key):
     with _lock, _conn() as c:
         c.execute("DELETE FROM flags WHERE memory_key=?", (key,))
+    backup.mark_dirty()
+
+
+# ---------- machines added by the team (and details added to existing ones) ----------
+_machine_cache = {}
+
+
+def save_machine(industry, data, created_by=""):
+    with _lock, _conn() as c:
+        old = c.execute("SELECT created FROM machines WHERE industry=? AND id=?", (industry, data["id"])).fetchone()
+        c.execute("INSERT OR REPLACE INTO machines VALUES (?, ?, ?, ?, ?)",
+                  (industry, data["id"], json.dumps(data), old[0] if old else now(), created_by))
+    _machine_cache.pop(industry, None)
+    if created_by != "demo":
+        backup.mark_dirty()
+
+
+def machines(industry):
+    if industry in _machine_cache:
+        return _machine_cache[industry]
+    try:
+        with _conn() as c:
+            out = [json.loads(r[0]) for r in c.execute("SELECT data FROM machines WHERE industry=? ORDER BY created", (industry,))]
+    except sqlite3.OperationalError:  # table not created yet (first start)
+        return []
+    _machine_cache[industry] = out
+    return out
+
+
+def add_manual_item(industry, asset_id, kind, title, text, source_ref=""):
+    row = {"id": f"man-{uuid.uuid4().hex[:8]}", "industry": industry, "asset_id": asset_id, "kind": kind,
+           "title": (title or "").strip()[:200], "text": (text or "").strip()[:1500], "source_ref": (source_ref or "")[:300],
+           "date": now()[:10]}
+    with _lock, _conn() as c:
+        c.execute("INSERT INTO manual_items VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                  (row["id"], industry, asset_id, kind, row["title"], row["text"], row["source_ref"], row["date"]))
+    backup.mark_dirty()
+    return row
+
+
+def manual_items(industry, asset_id=None):
+    q, a = "SELECT * FROM manual_items WHERE industry=?", [industry]
+    if asset_id:
+        q += " AND asset_id=?"
+        a.append(asset_id)
+    try:
+        with _conn() as c:
+            return [dict(r) for r in c.execute(q + " ORDER BY date, id", a)]
+    except sqlite3.OperationalError:
+        return []
+
+
+def manual_item(key):
+    if not (key or "").startswith("man-"):
+        return None
+    with _conn() as c:
+        r = c.execute("SELECT * FROM manual_items WHERE id=?", (key,)).fetchone()
+    return dict(r) if r else None
+
+
+# ---------- small key/value notes (sensor state, demo flags) ----------
+def meta_get(key):
+    with _conn() as c:
+        r = c.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+    return json.loads(r[0]) if r else {}
+
+
+def meta_set(key, value):
+    with _lock, _conn() as c:
+        c.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (key, json.dumps(value)))
+    if key.split(":")[0] in ("sensor", "sensorlog", "readings"):
+        backup.mark_dirty()
+
+
+def update_record(key, fields):
+    allowed = {k: v for k, v in fields.items() if k in REC_FIELDS and k not in ("id", "industry")}
+    if not allowed:
+        return
+    with _lock, _conn() as c:
+        c.execute(f"UPDATE records SET {', '.join(k + '=?' for k in allowed)} WHERE id=?", [*allowed.values(), key])
+    backup.mark_dirty()

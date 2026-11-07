@@ -90,9 +90,24 @@ def public_to_memory(industry, x):
             "timestamp": (ts if len(ts) == 10 else "2020-01-01") + "T12:00:00", "asset_id": "ALL"}
 
 
+def manual_to_memory(industry, m):
+    """A line from the maker's manual / product page (a fault, a service task or the spec sheet) for one machine."""
+    a = packs.asset(industry, m["asset_id"]) or {"id": m["asset_id"], "name": m["asset_id"], "model": "", "type_key": "", "site": ""}
+    src = f" [Source: {m['source_ref']}]" if m.get("source_ref") else ""
+    label = {"fault": "Known fault", "service": "Service task", "spec": "Spec sheet"}.get(m["kind"], "Manual note")
+    text = (f"Maker's manual for {a['id']} ({a.get('name', '')}, model {a.get('model', '')}, maker {a.get('maker', '')}) — "
+            f"{label}: {m['title']}. {m['text']}{src}")
+    tags = [f"industry:{industry}", "kind:manual", f"asset:{a['id']}", f"model:{a.get('model', '')}",
+            f"type:{a.get('type_key', '')}", f"site:{a.get('site', '')}", f"manual:{m['kind']}"]
+    meta = {"key": m["id"], "kind": "manual", "industry": industry, "asset_id": a["id"], "date": m["date"]}
+    return {"key": m["id"], "kind": "manual", "text": text, "tags": tags, "metadata": meta,
+            "timestamp": m["date"] + "T12:00:00", "asset_id": a["id"], "status": "approved"}
+
+
 def all_memories(industry, include_public=True):
     out = [record_to_memory(industry, r) for r in store.records(industry) if r["status"] != "rejected"]
     out += [tip_to_memory(industry, t) for t in store.tips(industry) if t["status"] != "rejected"]
+    out += [manual_to_memory(industry, m) for m in store.manual_items(industry)]
     if include_public:
         out += [public_to_memory(industry, x) for x in packs.public_records(industry)]
     return out
@@ -105,8 +120,38 @@ def memory_by_key(industry, key):
     t = store.tip(key)
     if t and t["industry"] == industry:
         return tip_to_memory(industry, t)
+    m = store.manual_item(key)
+    if m and m["industry"] == industry:
+        return manual_to_memory(industry, m)
     x = packs.public_record(industry, key)
     return public_to_memory(industry, x) if x else None
+
+
+def codes_in(text):
+    """Alarm / error / OBD codes in a question, e.g. 2041, P0171, E-504."""
+    return {c.upper() for c in re.findall(r"\b[A-Za-z]{0,3}-?\d{3,5}\b", text or "") if re.search(r"\d{3,}", c)}
+
+
+def relevance(industry, problem, items, asset=None):
+    """How well each memory matches the words and codes of the question (0 = no shared words at all).
+    Hindsight finds memories by meaning; this second check stops 'same machine, different problem' memories
+    from crowding out the right ones."""
+    corpus = all_memories(industry)
+    docs = [set(_tokens(m["text"])) for m in corpus]
+    n = len(docs) or 1
+    df = Counter(w for d in docs for w in d)
+    ignore = set(_tokens(" ".join([asset.get("id", ""), asset.get("name", ""), asset.get("model", "")]))) if asset else set()
+    q = [w for w in set(_tokens(problem)) if w not in ignore]
+    codes = codes_in(problem) - {c.upper() for c in ignore}
+    out = {}
+    for it in items:
+        text = it.get("text") or it.get("fact") or ""
+        words = set(_tokens(text))
+        s = sum(math.log(1 + n / max(df.get(w, 0), 1)) for w in q if w in words)
+        if codes and any(c in text.upper() or f"code:{c}" in (it.get("tags") or []) for c in codes):
+            s += 8
+        out[it["key"]] = round(s, 2)
+    return out
 
 
 # ---------- practice memory (offline) ----------
@@ -123,6 +168,8 @@ class PracticeMemory:
         scored = []
         for it, d in zip(items, docs):
             s = sum(math.log(1 + n / df[w]) for w in set(q) if w in d)
+            if s < 1.0:  # the words must match first; being on the same machine alone is not enough
+                continue
             if asset:
                 t = it["tags"]
                 if f"asset:{asset['id']}" in t:
@@ -195,19 +242,32 @@ class HindsightMemory:
         res = self._run(lambda c: c.recall(bank_id=config.bank_id(industry), query=query, tags=self._tags_for(asset),
                                            tags_match="any", budget="mid", max_tokens=3000))
         by_key = {}
+        patterns = 0
         for r in getattr(res, "results", []) or []:
             meta = getattr(r, "metadata", None) or {}
-            key = meta.get("key") or getattr(r, "document_id", None) or f"fact:{r.id}"
+            ftype = str(getattr(r, "type", "") or "")
+            if ftype == "observation":
+                # an "observation" is a pattern Hindsight built by itself from many memories (no single source)
+                if patterns >= 2:
+                    continue
+                patterns += 1
+                key = f"obs:{r.id}"
+            else:
+                key = meta.get("key") or getattr(r, "document_id", None) or f"fact:{r.id}"
             if key not in by_key:
                 by_key[key] = {"key": key, "fact": r.text, "fact_id": r.id, "tags": getattr(r, "tags", None) or [],
-                               "metadata": meta, "origin": "hindsight", "score": None}
+                               "metadata": meta, "origin": "hindsight", "score": None, "fact_type": ftype}
         out = []
         for key, item in list(by_key.items())[:k]:
-            full = memory_by_key(industry, key)
+            full = None if key.startswith("obs:") else memory_by_key(industry, key)
             if full:
                 item = {**full, **item, "text": full["text"], "kind": full["kind"], "asset_id": full["asset_id"]}
-            else:
-                item.update({"text": item["fact"], "kind": "public", "asset_id": "ALL"})
+            elif key.startswith("obs:"):
+                item.update({"text": item["fact"], "kind": "insight", "asset_id": "ALL"})
+            else:  # saved in Hindsight but not in this server's local copy (e.g. after a restart)
+                kind = item["metadata"].get("kind")
+                item.update({"text": item["fact"], "kind": kind if kind in ("record", "tip", "manual") else "insight",
+                             "asset_id": item["metadata"].get("asset_id") or "ALL"})
             out.append(item)
         return out
 
@@ -292,6 +352,22 @@ class MemoryService:
             except Exception as e:
                 self.last_error = f"Hindsight retain failed: {e}"
         if config.SYNC_RETAIN:  # serverless hosts may stop background threads after the reply
+            _go()
+        else:
+            threading.Thread(target=_go, daemon=True).start()
+        return "hindsight"
+
+    def retain_many(self, industry, mems):
+        if not self.cloud:
+            return "practice"
+
+        def _go():
+            for i in range(0, len(mems), 25):
+                try:
+                    self.cloud.retain_batch(industry, mems[i:i + 25])
+                except Exception as e:
+                    self.last_error = f"Hindsight retain failed: {e}"
+        if config.SYNC_RETAIN:
             _go()
         else:
             threading.Thread(target=_go, daemon=True).start()

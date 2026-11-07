@@ -37,10 +37,7 @@
    "tools": [
     "ask",
     "log",
-    "memory",
-    "playbook",
     "quiz",
-    "passport",
     "dishes"
    ]
   },

@@ -101,7 +101,7 @@ def build():
         "cost_per_hour": 3000,
         "sites": [{"id": "ind", "name": "Indiranagar outlet"}, {"id": "kor", "name": "Koramangala outlet"}],
         "roles": [
-            {"id": "cook", "name": "Line cook", "can_approve": False, "tools": ["ask", "log", "memory", "playbook", "quiz", "passport", "dishes"]},
+            {"id": "cook", "name": "Line cook", "can_approve": False, "tools": ["ask", "log", "quiz", "dishes"]},
             {"id": "chef", "name": "Head chef", "can_approve": True, "tools": ["ask", "log", "memory", "approvals", "playbook", "risk", "interview", "shift", "skills", "passport", "stats", "quiz", "dishes"]},
             {"id": "manager", "name": "Outlet manager", "can_approve": True, "tools": ["stats", "risk", "shift", "skills", "passport", "ask", "memory", "approvals", "playbook", "interview", "quiz", "dishes"]},
         ],

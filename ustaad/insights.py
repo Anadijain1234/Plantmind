@@ -63,6 +63,10 @@ def incident_cost(industry, inc):
 def trust_level(industry, kind, key):
     if kind == "public":
         return {"tier": "public", "label": "Public record"}
+    if kind == "manual":
+        return {"tier": "manual", "label": "Maker's manual — official instructions"}
+    if kind == "insight":
+        return {"tier": "insight", "label": "Pattern Hindsight learned by itself from many memories"}
     if kind == "tip":
         t = store.tip(key) or {}
         if t.get("status") == "pending":
@@ -73,6 +77,8 @@ def trust_level(industry, kind, key):
     r = store.record(key) or {}
     if r.get("status") == "pending":
         return {"tier": "unreviewed", "label": "Unreviewed — waiting for senior approval"}
+    if store.meta_get(f"sensor:{key}").get("confirmed"):
+        return {"tier": "sensor", "label": "Sensor-confirmed — readings went back to normal after this fix"}
     if r.get("outcome") in ("failed_again", "temporary"):
         return {"tier": "failed", "label": "Did not work — don't repeat"}
     if r.get("outcome") != "fixed":
@@ -296,7 +302,19 @@ def stats(industry):
     before = block([i for i in incs if i["start"][:10] < started])
     after = block([i for i in incs if i["start"][:10] >= started])
     saved = max(0, (before["avg_cost"] - after["avg_cost"]) * after["incidents"]) if after["incidents"] else 0
-    return {"monthly": series, "before": before, "after": after, "ustaad_started": started,
+    # ROI headline numbers
+    b_inc = [i for i in incs if i["start"][:10] < started]
+    a_inc = [i for i in incs if i["start"][:10] >= started]
+    fail_per_b = sum(i["failed_attempts"] for i in b_inc) / len(b_inc) if b_inc else 0
+    fail_per_a = sum(i["failed_attempts"] for i in a_inc) / len(a_inc) if a_inc else 0
+    live = _live(industry)
+    worked = sum(1 for r in live if r["outcome"] == "fixed")
+    failed = sum(1 for r in live if r["outcome"] in ("failed_again", "temporary"))
+    roi = {"hours_saved": round(max(0, before["mttr_minutes"] - after["mttr_minutes"]) * after["incidents"] / 60, 1),
+           "repeat_failures_avoided": round(max(0, fail_per_b - fail_per_a) * len(a_inc)),
+           "fixed": worked, "failed": failed, "fixed_rate": round(100 * worked / (worked + failed)) if worked + failed else 0,
+           "money_saved": saved}
+    return {"monthly": series, "before": before, "after": after, "ustaad_started": started, "roi": roi,
             "money_saved": saved, "total_incidents": len(incs), "records": len(_live(industry)),
             "tips": len(store.tips(industry)), "public_records": len(packs.public_records(industry)),
             "cost_per_hour": pk.get("cost_per_hour", 0), "currency": "₹"}
@@ -372,3 +390,88 @@ def quiz(industry, n=6, seed=None):
                    "options": opts, "answer": opts.index(r["cause"]),
                    "explain": f"{who} found this on {r['datetime'][:10]}: {r['action']}"})
     return {"questions": qs}
+
+
+# ---------- knowledge coverage map: how much of each machine's know-how is captured ----------
+def coverage(industry):
+    ppl = {p["id"]: p for p in packs.people(industry)}
+    fams = knowledge_families(industry)
+    recs = _live(industry)
+    rows = []
+    for a in packs.assets(industry):
+        af = [f for f in fams if f["asset_id"] == a["id"]]
+        proven = [f for f in af if f["owner"]]
+        written = [f for f in proven if f["captured"]]
+        fixers = Counter(r["person_id"] for r in recs
+                         if r["asset_id"] == a["id"] and r["outcome"] == "fixed" and r["person_id"] in ppl)
+        manual = len(store.manual_items(industry, a["id"]))
+        known = len(af)
+        score = round(100 * (0.45 * (len(proven) / known if known else 0) + 0.20 * (len(written) / known if known else 0)
+                             + 0.25 * min(len(fixers), 3) / 3 + 0.10 * (1 if manual else 0)))
+        flags = []
+        if not known:
+            flags.append("Nothing captured about it yet")
+        if len(fixers) == 1:
+            flags.append(f"Only {ppl[next(iter(fixers))]['name']} knows this machine")
+        top = fixers.most_common(1)[0][0] if fixers else None
+        if top and ppl[top].get("retiring_on"):
+            flags.append(f"Main expert {ppl[top]['name']} leaves on {ppl[top]['retiring_on']}")
+        if known - len(proven):
+            flags.append(f"{known - len(proven)} problem type(s) never fixed")
+        if not manual:
+            flags.append("No maker's manual added")
+        rows.append({"asset_id": a["id"], "asset": a.get("name", a["id"]), "site": a.get("site"), "score": score,
+                     "level": "good" if score >= 70 else ("ok" if score >= 45 else "low"),
+                     "problem_types": known, "proven": len(proven), "written_down": len(written),
+                     "experts": [{"id": pid, "name": ppl[pid]["name"], "fixes": n} for pid, n in fixers.most_common(3)],
+                     "manual_facts": manual, "flags": flags})
+    rows.sort(key=lambda x: x["score"])
+    return {"machines": rows,
+            "summary": {"average": round(sum(r["score"] for r in rows) / len(rows)) if rows else 0,
+                        "single_expert": sum(1 for r in rows if len(r["experts"]) == 1),
+                        "no_manual": sum(1 for r in rows if not r["manual_facts"]),
+                        "machines": len(rows)}}
+
+
+# ---------- expert leaderboard: credit for knowledge that others actually used ----------
+def leaderboard(industry):
+    pk = packs.get(industry)
+    started = pk["org"].get("ustaad_started", "2026-09-01")
+    recs = _live(industry)
+    tips = [t for t in store.tips(industry) if t["status"] != "rejected"]
+    before = [r["downtime_minutes"] for r in recs if r["datetime"][:10] < started and r["downtime_minutes"]]
+    base = statistics.median(before) if before else 0
+    rows = []
+    for p in packs.people(industry):
+        mine = [r for r in recs if r["person_id"] == p["id"]]
+        worked = sum(1 for r in mine if r["outcome"] == "fixed")
+        failed = sum(1 for r in mine if r["outcome"] in ("failed_again", "temporary"))
+        reused = [r for r in recs if r["credited_to"] == p["id"] and r["person_id"] != p["id"] and r["outcome"] == "fixed"]
+        n_tips = sum(1 for t in tips if t["person_id"] == p["id"])
+        first = min((r["datetime"][:10] for r in mine), default=None)
+        rows.append({"person_id": p["id"], "name": p["name"], "role": p.get("role", ""), "leaving": p.get("retiring_on"),
+                     "worked": worked, "failed": failed,
+                     "success_rate": round(100 * worked / (worked + failed)) if worked + failed else None,
+                     "reused_by_others": len(reused),
+                     "hours_saved_for_others": round(sum(max(0, base - (r["downtime_minutes"] or 0)) for r in reused) / 60, 1),
+                     "tips": n_tips, "first_record": first,
+                     "points": worked * 3 + len(reused) * 5 + n_tips * 2, "badges": []})
+    rows = [r for r in rows if r["points"] > 0]
+    rows.sort(key=lambda r: (-r["points"], -r["worked"]))
+
+    def give(badge, pick):
+        cands = [r for r in rows if pick(r)]
+        if cands:
+            cands[0]["badges"].append(badge)
+    give("🏆 Top fixer", lambda r: r["worked"] == max(x["worked"] for x in rows))
+    give("🔁 Most reused", lambda r: r["reused_by_others"] and r["reused_by_others"] == max(x["reused_by_others"] for x in rows))
+    for r in rows:
+        if r["success_rate"] is not None and r["success_rate"] >= 90 and r["worked"] >= 3:
+            r["badges"].append("🎯 Sharpshooter")
+    give("🎓 Mentor", lambda r: r["tips"] and r["tips"] == max(x["tips"] for x in rows))
+    newer = sorted([r for r in rows if r["first_record"] and r["worked"] >= 1], key=lambda r: r["first_record"], reverse=True)
+    if newer and "🏆 Top fixer" not in newer[0]["badges"]:
+        newer[0]["badges"].append("🌱 Rising star")
+    for i, r in enumerate(rows, 1):
+        r["rank"] = i
+    return {"people": rows, "how": "Points: 3 per fix that worked, 5 each time someone else reused your fix, 2 per expert tip."}

@@ -8,11 +8,11 @@ import os
 
 from flask import Flask, jsonify, redirect, request, send_from_directory
 
-from ustaad import agent, config, custom, insights, llm, packs, store
+from ustaad import agent, backup, config, custom, insights, llm, machines, packs, store
 from ustaad.memory import memory
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
-app.config["MAX_CONTENT_LENGTH"] = 12 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 store.init()
 
 
@@ -54,6 +54,11 @@ def passport_link(industry, person_id):
     return redirect(f"/#/passport/{industry}/{person_id}")
 
 
+@app.get("/m/<industry>/<asset_id>")
+def machine_link(industry, asset_id):  # the QR sticker on a machine points here
+    return redirect(f"/#/m/{industry}/{asset_id}")
+
+
 @app.get("/health")
 def health():
     return ok({"ok": True})
@@ -63,7 +68,9 @@ def health():
 @app.get("/api/status")
 def status():
     return ok({"memory": memory.mode, "memory_error": memory.last_error, "llm": llm.available(),
-               "llm_model": config.GROQ_MODEL if llm.available() else None, "llm_error": llm.last_error,
+               "llm_model": config.GROQ_MODEL if llm.groq_available() else (config.SARVAM_CHAT_MODEL if llm.sarvam_available() else None),
+               "groq": llm.groq_available(), "sarvam": llm.sarvam_available(), "llm_error": llm.last_error,
+               "autosave": backup.status(),
                "banks": {i: config.bank_id(i) for i in packs.ids()}})
 
 
@@ -77,13 +84,15 @@ def industries():
 @app.post("/api/packs/custom")
 def create_pack():
     b = body()
-    return ok(custom.create(b.get("name"), b.get("description", "")))
+    out = custom.create(b.get("name"), b.get("description", ""))
+    backup.mark_dirty()
+    return ok(out)
 
 
 @app.get("/api/i/<industry>/pack")
 def pack(industry):
     p = packs.get(_ind(industry))
-    return ok(packs.summary(industry) | {"assets": p["assets"], "people": p["people"], "panels": p.get("panels", []),
+    return ok(packs.summary(industry) | {"assets": packs.assets(industry), "people": p["people"], "panels": p.get("panels", []),
                                          "checklists": p.get("checklists", []), "lookup": p.get("lookup")})
 
 
@@ -97,7 +106,7 @@ def ask(industry):
 def feedback(industry):
     b = body()
     return ok(agent.feedback(_ind(industry), b.get("ask_id"), b.get("result"), b.get("person_id"), b.get("note", ""),
-                             b.get("downtime_minutes"), b.get("action_done", ""), b.get("steps_done")))
+                             b.get("downtime_minutes"), b.get("action_done", ""), b.get("steps_done"), b.get("asset_id")))
 
 
 @app.post("/api/i/<industry>/log")
@@ -190,6 +199,16 @@ def shift_report(industry):
     return ok(agent.shift_report(_ind(industry), int(request.args.get("hours", 24)), request.args.get("language", "en")))
 
 
+@app.get("/api/i/<industry>/coverage")
+def coverage(industry):
+    return ok(insights.coverage(_ind(industry)))
+
+
+@app.get("/api/i/<industry>/leaderboard")
+def leaderboard(industry):
+    return ok(insights.leaderboard(_ind(industry)))
+
+
 @app.get("/api/i/<industry>/skills")
 def skills(industry):
     return ok(insights.skill_map(_ind(industry)))
@@ -232,6 +251,7 @@ def photo(industry):
 @app.post("/api/i/<industry>/reset")
 def reset(industry):
     store.load_seed(_ind(industry))
+    backup.mark_dirty()
     return ok({"ok": True, "message": "Demo data restored for this industry."})
 
 
@@ -246,10 +266,74 @@ def voice():
     f = request.files.get("audio")
     if not f:
         raise ValueError("No audio received")
-    text = llm.transcribe(f.read(), f.filename or "voice.webm", request.form.get("language") or None)
+    text, engine = llm.transcribe(f.read(), f.filename or "voice.webm", request.form.get("language") or None)
     if not text:
-        raise ValueError("Voice needs the Groq key" if not llm.available() else f"Could not understand the audio: {llm.last_error}")
-    return ok({"text": text})
+        raise ValueError("Voice needs the Sarvam or Groq key" if not llm.available() else f"Could not understand the audio: {llm.last_error}")
+    return ok({"text": text, "engine": engine})
+
+
+@app.post("/api/speak")
+def speak():
+    b = body()
+    audio = llm.speak(b.get("text", ""), b.get("language", "en"))
+    if not audio:
+        raise ValueError("Speaking needs the Sarvam key" if not llm.sarvam_available() else f"Could not speak: {llm.last_error}")
+    return ok({"audio": audio, "mime": "audio/wav"})
+
+
+# ---------- My machines ----------
+@app.get("/api/i/<industry>/machines")
+def machine_list(industry):
+    return ok({"machines": machines.summary_list(_ind(industry))})
+
+
+@app.get("/api/i/<industry>/machines/<asset_id>")
+def machine_profile(industry, asset_id):
+    return ok(machines.profile(_ind(industry), asset_id))
+
+
+@app.post("/api/i/<industry>/machines")
+def machine_save(industry):
+    b = body()
+    return ok(machines.save(_ind(industry), b.get("machine") or {}, b.get("person_id"), b.get("role")))
+
+
+@app.post("/api/i/<industry>/machines/read")
+def machine_read(industry):
+    """Fill the 'add machine' form from a PDF manual, a product web page, a nameplate photo or pasted text."""
+    _ind(industry)
+    f = request.files.get("file")
+    if f:
+        data = f.read()
+        name = f.filename or "upload"
+        if (f.mimetype or "").startswith("image/"):
+            return ok(machines.from_photo(industry, base64.b64encode(data).decode(), f.mimetype))
+        if data[:4] != b"%PDF":
+            raise ValueError("Please upload a PDF manual or a photo")
+        return ok(machines.extract(industry, machines.pdf_text(data), f"PDF manual: {name}"))
+    b = body()
+    if b.get("url"):
+        return ok(machines.extract(industry, machines.fetch_page(b["url"]), b["url"]))
+    return ok(machines.extract(industry, b.get("text", ""), "Typed in by the team"))
+
+
+@app.post("/api/i/<industry>/machines/<asset_id>/stock")
+def machine_stock(industry, asset_id):
+    b = body()
+    return ok(machines.set_stock(_ind(industry), asset_id, b.get("part"), b.get("stock")))
+
+
+@app.post("/api/i/<industry>/sensors/alert")
+def sensor_alert(industry):
+    b = body()
+    return ok(machines.sensor_alert(_ind(industry), b.get("asset_id"), b.get("reading") or {}))
+
+
+@app.post("/api/i/<industry>/sensors/reading")
+def sensor_reading(industry):
+    """For a real sensor gateway: {"asset_id": "CNC-3", "vib": 2.1, "temp": 41}"""
+    b = body()
+    return ok(machines.sensor_reading(_ind(industry), b.get("asset_id"), b.get("vib", 0), b.get("temp", 0)))
 
 
 # ---------- one-time Hindsight seeding from the deployed app (protected by SEED_TOKEN) ----------

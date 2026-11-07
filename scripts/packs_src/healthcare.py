@@ -98,8 +98,8 @@ def build():
         "cost_per_hour": 4000,
         "sites": [{"id": "blr", "name": "Bengaluru main hospital"}, {"id": "mys", "name": "Mysuru branch"}],
         "roles": [
-            {"id": "nurse", "name": "ICU nurse", "can_approve": False, "tools": ["ask", "log", "memory", "playbook", "quiz", "passport", "checklist", "devices"]},
-            {"id": "ot", "name": "Neurosurgery OT team", "can_approve": False, "tools": ["ask", "log", "memory", "playbook", "checklist", "quiz", "passport", "devices"]},
+            {"id": "nurse", "name": "ICU nurse", "can_approve": False, "tools": ["ask", "log", "quiz", "checklist"]},
+            {"id": "ot", "name": "Neurosurgery OT team", "can_approve": False, "tools": ["checklist", "ask", "log", "quiz"]},
             {"id": "biomed", "name": "Biomedical engineer (senior)", "can_approve": True, "tools": ["ask", "log", "memory", "approvals", "playbook", "risk", "interview", "shift", "skills", "passport", "stats", "devices", "checklist", "quiz"]},
             {"id": "incharge", "name": "Nursing in-charge", "can_approve": True, "tools": ["ask", "memory", "approvals", "shift", "risk", "interview", "skills", "passport", "stats", "checklist", "quiz", "log", "playbook", "devices"]},
         ],

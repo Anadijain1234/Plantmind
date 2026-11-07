@@ -39,12 +39,8 @@
    "tools": [
     "ask",
     "log",
-    "memory",
-    "playbook",
     "quiz",
-    "passport",
-    "checklist",
-    "devices"
+    "checklist"
    ]
   },
   {
@@ -52,14 +48,10 @@
    "name": "Neurosurgery OT team",
    "can_approve": false,
    "tools": [
+    "checklist",
     "ask",
     "log",
-    "memory",
-    "playbook",
-    "checklist",
-    "quiz",
-    "passport",
-    "devices"
+    "quiz"
    ]
   },
   {
